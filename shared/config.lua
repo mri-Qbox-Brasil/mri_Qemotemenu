@@ -119,7 +119,11 @@ Config.NewscamEnabled = false
 Config.AllowVisionsToggling = false -- visao noturna / termica nos binoculos
 Config.DisableIdleCam = true
 
-Config.CinematicsBridgeEnabled = true -- integracao com core_cinematics
+-- Integracao com o core_cinematics (espelha o emote ativo num state bag para a
+-- gravacao). O bridge so se instala se o core_cinematics estiver de fato
+-- rodando; este flag e o desligamento manual. Hoje o core_cinematics nao esta
+-- no `ensure` de nenhum cfg deste servidor, entao o bridge fica dormente.
+Config.CinematicsBridgeEnabled = true
 
 -- Controles bloqueados enquanto o player esta de maos ao alto.
 Config.DisabledHandsupControls = {

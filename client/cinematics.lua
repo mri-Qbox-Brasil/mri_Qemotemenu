@@ -123,7 +123,21 @@ end
 -- são chamadas primeiro; o estado interno (IsInAnimation / CurrentAnimationName)
 -- já está atualizado quando a nossa lógica roda.
 
-CreateThread(function()
+local bridgeInstalled = false
+
+---O bridge só faz sentido com o core_cinematics no ar: fora isso ele embrulha
+---os globais de emote sem ninguém do outro lado consumindo o state bag — puro
+---custo, e qualquer descuido no wrapper vira bug do menu. Hoje o
+---core_cinematics não está no `ensure` de nenhum cfg deste servidor.
+local function shouldInstallBridge()
+    if not Config.CinematicsBridgeEnabled then return false end
+    return GetResourceState('core_cinematics'):find('start') ~= nil
+end
+
+local function installBridge()
+    if bridgeInstalled or not shouldInstallBridge() then return end
+    bridgeInstalled = true
+
     -- Aguarda EmoteData popular pra termos o lookup pronto
     waitConverted()
 
@@ -189,6 +203,19 @@ CreateThread(function()
         publishState()
         return result
     end
+
+    lib.print.info('Bridge do core_cinematics instalado.')
+end
+
+CreateThread(function()
+    installBridge()
+end)
+
+-- O core_cinematics pode subir depois de nos. Os wrappers so precisam existir
+-- a partir dai, entao instalamos na hora em que ele aparecer.
+AddEventHandler('onResourceStart', function(resource)
+    if resource ~= 'core_cinematics' then return end
+    CreateThread(installBridge)
 end)
 
 -- Limpa o state bag se o resource parar (evita "fantasma" do último emote)

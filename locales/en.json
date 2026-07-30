@@ -48,6 +48,20 @@
   "register_crawl": "Crawl",
   "register_ragdoll": "Ragdoll",
 
+  "camera": "Press G to use the camera flash.",
+  "candle": "Press G to light the candle.",
+  "cut": "Press G to cut.",
+  "firework": "Press G to set off the firework.",
+  "makeitrain": "Press G to make it rain.",
+  "pee": "Hold G to pee.",
+  "poop": "Press G to poop.",
+  "puke": "Press G to puke.",
+  "smoke": "Hold G to smoke.",
+  "spraychamp": "Hold G to spray champagne.",
+  "stun": "Press G to use the stun gun.",
+  "useleafblower": "Press G to use the leaf blower.",
+  "vape": "Hold G to vape.",
+
   "admin_no_permission": "You don't have permission to change the server defaults.",
   "admin_default_set": "Server default updated.",
   "admin_invalid_slot": "Invalid slot."

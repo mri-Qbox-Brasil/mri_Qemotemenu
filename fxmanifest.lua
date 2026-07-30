@@ -25,11 +25,15 @@ dependencies {
 
 ox_lib "locale"
 
+-- `shared/translate.lua` PRECISA vir antes de `data/animations.lua` (que e
+-- client_script, portanto carrega depois de todo shared_script): o catalogo
+-- chama Translate() em 111 entradas de PtfxInfo durante o proprio load.
 shared_scripts {
     "@ox_lib/init.lua",
     "@qbx_core/modules/playerdata.lua",
     "shared/types.lua",
     "shared/config.lua",
+    "shared/translate.lua",
     "data/animals.lua"
 }
 

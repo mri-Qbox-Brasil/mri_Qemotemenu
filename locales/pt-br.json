@@ -48,6 +48,20 @@
   "register_crawl": "Rastejar",
   "register_ragdoll": "Ragdoll",
 
+  "camera": "Pressione G para usar o flash da câmera.",
+  "candle": "Pressione G para acender a vela.",
+  "cut": "Pressione G para cortar.",
+  "firework": "Pressione G para soltar o fogo de artifício.",
+  "makeitrain": "Pressione G para fazer chover dinheiro.",
+  "pee": "Segure G para fazer xixi.",
+  "poop": "Pressione G para fazer cocô.",
+  "puke": "Pressione G para vomitar.",
+  "smoke": "Segure G para fumar.",
+  "spraychamp": "Segure G para jogar champanhe.",
+  "stun": "Pressione G para usar a arma de choque.",
+  "useleafblower": "Pressione G para usar o soprador de folhas.",
+  "vape": "Segure G para usar o vape.",
+
   "admin_no_permission": "Você não tem permissão para alterar os padrões do servidor.",
   "admin_default_set": "Padrão do servidor atualizado.",
   "admin_invalid_slot": "Slot inválido."
