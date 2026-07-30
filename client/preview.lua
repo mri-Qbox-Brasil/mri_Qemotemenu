@@ -144,6 +144,36 @@ function GetPreviewingEmote()
     return previewingEmote
 end
 
+---Estado bruto do preview. Serve para separar "a entidade sumiu" de "a
+---entidade esta viva e tocando a animacao, mas o menu parou de desenha-la" —
+---sao problemas diferentes e a tela sozinha nao distingue os dois.
+---@return table
+function GetPreviewDiagnostics()
+    local ped = PreviewPed
+    local alive = ped and ped ~= 0 and DoesEntityExist(ped) or false
+
+    local emote = previewingEmote and EmoteData[previewingEmote] or nil
+    local playing = nil
+    if alive and emote and emote.dict and emote.anim then
+        playing = IsEntityPlayingAnim(ped, emote.dict, emote.anim, 3)
+    end
+
+    return {
+        previewActive  = PreviewActive,
+        pauseMenuOpen  = IsPauseMenuActive(),
+        pedHandle      = ped or 0,
+        pedExists      = alive,
+        pedVisible     = alive and IsEntityVisible(ped) or false,
+        pedFrozen      = alive and IsEntityPositionFrozen(ped) or false,
+        emote          = previewingEmote,
+        emoteDict      = emote and emote.dict or nil,
+        emoteAnim      = emote and emote.anim or nil,
+        dictLoaded     = (emote and emote.dict) and HasAnimDictLoaded(emote.dict) or false,
+        playingAnim    = playing,
+        distanceToPed  = alive and #(GetEntityCoords(cache.ped) - GetEntityCoords(ped)) or -1,
+    }
+end
+
 ---Fecha o preview. A ordem importa: tick -> cursor -> frontend -> ped -> timecycle.
 ---Trocar a ordem deixa ped fantasma na tela ou blur preso.
 function ClosePreview()

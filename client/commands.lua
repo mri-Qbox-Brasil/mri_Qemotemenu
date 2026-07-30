@@ -241,17 +241,34 @@ RegisterCommand('emotepreview', function(_source, args)
         Notify(('Reaplicado: %s'):format(current))
         return
     else
-        NotifyLong(table.concat({
-            'Bancada do preview:',
-            '/emotepreview sleep   — alterna SetPauseMenuPedSleepState',
-            '/emotepreview regive  — alterna a reentrega do ped apos a animacao',
-            '/emotepreview slot N  — muda a posicao do ped na tela',
-            '/emotepreview replay  — reaplica o ultimo emote em preview',
-            ('Agora: sleep=%s regive=%s slot=%s'):format(
-                tostring(Config.PreviewSleepState),
-                tostring(Config.PreviewRegiveOnPlay),
-                tostring(Config.PreviewPedSlot)),
+        local d = GetPreviewDiagnostics()
+
+        -- Vai para o console (F8) em vez de notificacao: sao muitas linhas, e
+        -- de la da para copiar o texto.
+        lib.print.info(table.concat({
+            '',
+            '=== preview do mri_Qemotemenu ===',
+            ('  config          sleep=%s  regive=%s  slot=%s')
+                :format(tostring(Config.PreviewSleepState), tostring(Config.PreviewRegiveOnPlay),
+                    tostring(Config.PreviewPedSlot)),
+            ('  preview ativo   %s'):format(tostring(d.previewActive)),
+            ('  pause menu      %s'):format(tostring(d.pauseMenuOpen)),
+            ('  ped handle      %s (existe: %s)'):format(tostring(d.pedHandle), tostring(d.pedExists)),
+            ('  ped visivel     %s   congelado: %s'):format(tostring(d.pedVisible), tostring(d.pedFrozen)),
+            ('  distancia       %.2f m'):format(d.distanceToPed),
+            ('  emote           %s'):format(tostring(d.emote)),
+            ('  dict / anim     %s / %s'):format(tostring(d.emoteDict), tostring(d.emoteAnim)),
+            ('  dict carregado  %s'):format(tostring(d.dictLoaded)),
+            ('  tocando a anim  %s'):format(tostring(d.playingAnim)),
+            '',
+            '  /emotepreview sleep   alterna SetPauseMenuPedSleepState',
+            '  /emotepreview regive  alterna a reentrega do ped apos a animacao',
+            '  /emotepreview slot N  muda a posicao do ped na tela',
+            '  /emotepreview replay  reaplica o ultimo emote em preview',
+            '',
         }, '\n'))
+
+        Notify('Diagnostico do preview no console (F8).')
         return
     end
 

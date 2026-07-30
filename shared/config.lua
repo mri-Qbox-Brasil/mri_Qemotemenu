@@ -21,15 +21,18 @@ Config.PreviewPed = true -- preview do emote num ped clonado (scaleform do pause
 --
 --   PreviewPedSlot      posicao do ped na tela. A gh-arenapaintball usa 2
 --                       (direita do centro). Outros valores movem/ocultam.
---   PreviewSleepState   SetPauseMenuPedSleepState. `false` deveria deixar o ped
---                       animar; se ele continuar dormindo, tente `true` — o
---                       nome do nativo sugere um sentido e pode ser o inverso.
---   PreviewRegiveOnPlay reentrega o ped ao menu depois de aplicar a animacao.
---                       O frontend parece congelar o estado do ped no momento
---                       do GivePedToPauseMenu; sem isso a task nova nao sobe.
+--   PreviewSleepState   SetPauseMenuPedSleepState. Lido como "o controlador de
+--                       ped DO MENU dorme": com `true` o frontend para de
+--                       dirigir o ped e a nossa TaskPlayAnim sobrevive. Com
+--                       `false` o menu manda, e o ped fica no idle dele — que
+--                       e o que se via antes.
+--   PreviewRegiveOnPlay reentregar o ped ao menu depois de aplicar a animacao
+--                       FAZ ELE SUMIR da tela: GivePedToPauseMenu num ped que
+--                       o menu ja exibe desanexa em vez de atualizar. Fica
+--                       desligado; so mexa para testar.
 Config.PreviewPedSlot = 2
-Config.PreviewSleepState = false
-Config.PreviewRegiveOnPlay = true
+Config.PreviewSleepState = true
+Config.PreviewRegiveOnPlay = false
 
 -- ============================================================
 -- Favoritos nas setas
