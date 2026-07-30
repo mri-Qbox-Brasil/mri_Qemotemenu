@@ -72,8 +72,12 @@ Opções em `shared/config.lua`.
 | `MenuKeybind` | `f5` | Tecla que abre o menu. |
 | `CancelEmoteKey` | `f6` | Tecla que cancela o emote. |
 | `PreviewPed` | `true` | Preview do personagem no menu. |
-| `PreviewMode` | `'world'` | Como o ped de preview é desenhado. Ver abaixo. |
-| `PreviewBlur` | `true` | Desfoca o mundo enquanto o menu está aberto. |
+| `PreviewMode` | `'studio'` | Como o ped de preview é desenhado. Ver abaixo. |
+| `StudioCoords` | interior isolado | Onde o clone é posicionado no modo estúdio. |
+| `StudioCamLateral` | `-0.4` | Empurra o ped para o lado do quadro, liberando a tela para a interface. |
+| `StudioForceDaytime` | `true` | Força luz de dia no preview. É client-side e vale só enquanto o menu está aberto. |
+| `FreezePlayerWhileOpen` | `true` | Congela o personagem real enquanto o menu está aberto. |
+| `PreviewBlur` | `true` | Só no modo `world`: desfoca o mundo atrás do ped. |
 | `FavoriteSlots` | 4 setas | Slots de atalho e seus padrões de fábrica. |
 | `InputGuard` | todos ligados | Liga ou desliga cada sinal de detecção. |
 | `AdultEmotesDisabled` | `false` | Esconde emotes marcados como adultos. |
@@ -92,24 +96,44 @@ Opções em `shared/config.lua`.
 
 | Modo | Como funciona |
 |---|---|
-| `world` (padrão) | O clone fica visível no mundo, reposicionado a cada frame na frente da câmera, na altura da coluna central vazia da interface. É a técnica que o rpemotes usava. |
-| `scaleform` | O clone é entregue à scaleform do menu de pausa do jogo, como a `gh-arenapaintball` faz. |
+| `studio` (padrão) | Um clone do personagem é levado para um ponto isolado e uma câmera própria o enquadra. Fundo limpo, iluminação previsível e o mesmo enquadramento sempre, de dia ou de madrugada. |
+| `world` | O clone fica visível no mundo, reposicionado a cada frame na frente da câmera do jogo. Mais leve — não troca a câmera nem carrega área nova — mas pega a iluminação do lugar e pode encostar em parede ou carro. |
 
-O `world` é o padrão porque, em teste, o modo `scaleform` deixava o clone vivo e
-de fato tocando a animação — mas o menu de pausa não o desenhava, e ainda
-reativava a visibilidade dele no mundo, o que fazia aparecer um sósia animando
-em cima do jogador.
+#### Por que não existe modo "menu de pausa"
 
-Para calibrar sem reiniciar o resource, com o menu aberto:
+Uma versão anterior entregava o clone à scaleform do menu de pausa do jogo
+(`GivePedToPauseMenu`), que dá um enquadramento e uma iluminação muito bons.
+**Ela não pode mostrar emote**, e isso é uma limitação do próprio jogo, não um
+defeito de configuração: aquela scaleform desenha o ped mas ignora qualquer
+animação que a gente mande. A única que ela aceita é a de dormir, que é dela.
+
+Foi confirmado por quatro caminhos: a documentação do native, dois relatos de
+quem tentou exatamente este caso de uso, e o nosso próprio diagnóstico in-game —
+o clone reportava estar tocando a animação enquanto a tela mostrava a pose dela.
+
+Não vale tentar de novo. Se a intenção for um **retrato parado** do personagem,
+aí sim ela serve.
+
+#### Calibrar o enquadramento
+
+Com o menu aberto, sem reiniciar o resource:
 
 | Comando | Efeito |
 |---|---|
-| `/emotepreview` | Despeja o diagnóstico completo no console (F8). |
-| `/emotepreview mode <world\|scaleform>` | Troca de modo na hora. |
-| `/emotepreview pos <x> <y>` | Move o ped na tela (coordenadas de 0 a 1). |
-| `/emotepreview depth <metros>` | Aproxima ou afasta o ped da câmera. |
-| `/emotepreview blur` | Liga/desliga o desfoque do mundo. |
+| `/emotepreview` | Diagnóstico completo no console (F8). |
+| `/emotepreview mode <studio\|world>` | Troca de modo na hora. |
+| `/emotepreview cam <x> <y> <z>` | Move a câmera em relação ao ped. |
+| `/emotepreview fov <n>` | Abre ou fecha o campo de visão. |
+| `/emotepreview lateral <n>` | Empurra o ped para o lado do quadro. Negativo vai para a direita. |
+| `/emotepreview rot <graus>` | Gira o ped. |
+| `/emotepreview tc <timecycle>` | Troca a iluminação. Sem argumento, limpa. |
+| `/emotepreview dof` | Liga/desliga o desfoque de profundidade. |
+| `/emotepreview daytime` | Liga/desliga a luz de dia forçada. |
 | `/emotepreview replay` | Reaplica o último emote pré-visualizado. |
+| `/emotepreview dump` | Imprime o bloco de config pronto para colar. |
+
+O fluxo é: ajustar olhando na tela, rodar `dump`, copiar do F8 e colar no
+`shared/config.lua`.
 
 O diagnóstico é o que separa "a entidade sumiu" de "está viva e animando, mas
 não está sendo desenhada" — dois problemas que na tela parecem o mesmo.

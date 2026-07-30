@@ -15,35 +15,57 @@ Config.CancelEmoteKey = 'f6'
 
 Config.PreviewPed = true -- preview do emote num ped clonado
 
--- 'world'     — clone visivel, plantado na frente da camera na coluna central
---               da NUI. Tecnica do proprio rpemotes (Utils.lua, ShowPedMenu).
--- 'scaleform' — clone entregue a scaleform do pause menu, como a
---               gh-arenapaintball faz.
+-- 'studio' — clone teleportado para um ponto isolado, com camera propria.
+--            Fundo limpo, iluminacao previsivel, enquadramento sempre igual.
+-- 'world'  — clone plantado na frente da camera do jogo, sem camera nova.
+--            Mais leve, mas pega a iluminacao do lugar e pode encostar em
+--            geometria.
 --
--- 'world' e o padrao porque o diagnostico in-game mostrou que, no modo
--- scaleform, o clone estava vivo e DE FATO tocando a animacao, mas o pause menu
--- nao o desenhava — e ainda reativava a visibilidade dele no mundo, deixando um
--- sosia animando em cima do jogador.
-Config.PreviewMode = 'world'
+-- NAO existe 'scaleform'. O GivePedToPauseMenu desenha o ped mas ignora
+-- qualquer task de animacao — ver o cabecalho de client/preview.lua.
+Config.PreviewMode = 'studio'
 
+-- ------------------------------------------------------------
+-- Modo 'studio'
+-- ------------------------------------------------------------
+-- Coordenada herdada da lista de interiores escondidos que o qbx_core ja usa
+-- para preview de personagem (config/client.lua:33-34), entao e um ponto ja
+-- validado neste servidor. O `mri_Qautoshot` documenta uma alternativa mais
+-- radical — vec3(0.0, 0.0, -150.0), onde nao existe geometria nenhuma para
+-- vazar atras do ped — mas o client dele ainda nao esta implementado.
+Config.StudioCoords = vec3(1104.49, 195.9, -49.44)
+Config.StudioHeading = 44.22
+
+-- Camera portada do retrato do qbx_core (client/character.lua:139-152).
+-- StudioCamOffset e relativo ao ped: x = lado, y = frente, z = altura.
+Config.StudioCamOffset = vec3(0.0, 1.6, 0.65)
+Config.StudioCamFov = 38.0
+-- Empurra o ped para um lado do quadro e libera o resto da tela para a NUI.
+-- Negativo joga para a direita da tela.
+Config.StudioCamLateral = -0.4
+-- 0 = corte seco. Qualquer valor > 0 faz a camera INTERPOLAR da posicao do
+-- jogador ate o estudio — ou seja, atravessar o mapa voando. Deixe em 0.
+Config.StudioCamBlend = 0
+Config.StudioDof = true       -- profundidade de campo rasa (exige SetUseHiDof no tick)
+Config.StudioLoadScene = true -- forca o streaming do estudio antes de mostrar
+
+-- Iluminacao previsivel. O timecycle nao mexe no relogio; o ForceDaytime sim,
+-- e e client-side e global enquanto o menu esta aberto — por isso os dois sao
+-- separados, para dar de usar so o primeiro se algo mais no servidor ler a hora.
+Config.StudioTimecycle = ''
+Config.StudioForceDaytime = true
+
+Config.FreezePlayerWhileOpen = true
+
+-- ------------------------------------------------------------
+-- Modo 'world'
+-- ------------------------------------------------------------
 Config.PreviewBlur = true -- SetTimecycleModifier('hud_def_blur') com o menu aberto
-
--- Modo 'world': onde plantar o ped. X/Y sao coordenadas de tela (0..1) e batem
--- com a coluna central vazia do layout da NUI.
+-- Onde plantar o ped. X/Y sao coordenadas de tela (0..1).
 Config.PreviewScreenX = 0.50
 Config.PreviewScreenY = 0.82
-Config.PreviewDepth = 3.2          -- metros a frente da camera
+Config.PreviewDepth = 3.2           -- metros a frente da camera
 Config.PreviewHeadingOffset = 180.0 -- 180 = de frente para a camera
-
--- Modo 'scaleform'. Use /emotepreview para alternar in-game.
---   PreviewPedSlot      posicao do ped na tela; a arena usa 2 (direita do centro)
---   PreviewSleepState   `true` faz o controlador de ped DO MENU parar de dirigir
---                       o ped, deixando a nossa TaskPlayAnim sobreviver
---   PreviewRegiveOnPlay reentregar o ped ao menu depois da animacao o FAZ SUMIR
---                       (GivePedToPauseMenu desanexa em vez de atualizar)
-Config.PreviewPedSlot = 2
-Config.PreviewSleepState = true
-Config.PreviewRegiveOnPlay = false
 
 -- ============================================================
 -- Favoritos nas setas

@@ -210,21 +210,73 @@ RegisterCommand('emoteguard', function()
     DumpInputGuard()
 end, false)
 
--- Bancada do preview. O comportamento do ped dentro da scaleform do pause menu
--- nao e documentado e varia por gamebuild, entao em vez de chutar valores no
--- config e reiniciar o resource a cada tentativa, dá para alterná-los com o
--- menu aberto e ver o resultado na hora.
+
+-- ============================================================
+-- Bancada do preview
+-- ============================================================
+-- O enquadramento certo da camera do estudio so se acha olhando na tela. Em vez
+-- de chutar valores no config e reiniciar o resource a cada tentativa, estes
+-- subcomandos alteram tudo com o menu aberto e reaplicam na hora. O `dump`
+-- fecha o ciclo: imprime o bloco pronto para colar no shared/config.lua.
+
+local function reapplyPreview()
+    RefreshPreviewCam()
+    local current = GetPreviewingEmote()
+    if current then PreviewEmote(current) end
+end
+
+local function previewStatus()
+    local d = GetPreviewDiagnostics()
+
+    -- Vai para o console (F8) e nao para notificacao: sao muitas linhas, e de la
+    -- da para copiar o texto.
+    lib.print.info(table.concat({
+        '',
+        '=== preview do mri_Qemotemenu ===',
+        ('  modo            %s'):format(tostring(d.mode)),
+        ('  preview ativo   %s'):format(tostring(d.previewActive)),
+        ('  camera          handle=%s existe=%s renderizando=%s')
+            :format(tostring(d.camHandle), tostring(d.camExists), tostring(d.camRendering)),
+        ('  ped             handle=%s existe=%s visivel=%s')
+            :format(tostring(d.pedHandle), tostring(d.pedExists), tostring(d.pedVisible)),
+        ('  ped coords      %s'):format(d.pedCoords and
+            ('%.2f, %.2f, %.2f'):format(d.pedCoords.x, d.pedCoords.y, d.pedCoords.z) or '-'),
+        ('  emote           %s'):format(tostring(d.emote)),
+        ('  dict / anim     %s / %s'):format(tostring(d.emoteDict), tostring(d.emoteAnim)),
+        ('  dict carregado  %s'):format(tostring(d.dictLoaded)),
+        ('  tocando a anim  %s'):format(tostring(d.playingAnim)),
+        '',
+        '  /emotepreview mode <studio|world>',
+        '  /emotepreview cam <x> <y> <z>   offset da camera relativo ao ped',
+        '  /emotepreview fov <n>',
+        '  /emotepreview lateral <n>       empurra o ped para o lado do quadro',
+        '  /emotepreview rot <graus>       gira o ped',
+        '  /emotepreview tc <timecycle>    vazio limpa',
+        '  /emotepreview dof               liga/desliga profundidade de campo',
+        '  /emotepreview daytime           liga/desliga a luz de dia forcada',
+        '  /emotepreview replay            reaplica o emote em preview',
+        '  /emotepreview dump              imprime o config pronto para colar',
+        '',
+    }, '\n'))
+end
+
 RegisterCommand('emotepreview', function(_source, args)
     local what = args[1] and tostring(args[1]):lower() or nil
 
+    if not what then
+        previewStatus()
+        Notify('Diagnostico do preview no console (F8).')
+        return
+    end
+
     if what == 'mode' then
         local wanted = args[2] and tostring(args[2]):lower() or nil
-        if wanted ~= 'world' and wanted ~= 'scaleform' then
-            Notify('Uso: /emotepreview mode <world|scaleform>', 'error')
+        if wanted ~= 'studio' and wanted ~= 'world' then
+            Notify('Uso: /emotepreview mode <studio|world>', 'error')
             return
         end
 
-        -- Precisa reabrir: os dois modos montam o ped de formas diferentes.
+        -- Precisa reabrir: os dois modos montam ped e camera de formas diferentes.
         local wasOpen = PreviewActive
         local current = GetPreviewingEmote()
         ClosePreview()
@@ -236,48 +288,63 @@ RegisterCommand('emotepreview', function(_source, args)
 
         Notify(('Modo do preview: %s'):format(wanted), 'success')
         return
-    elseif what == 'pos' then
-        local x, y = tonumber(args[2]), tonumber(args[3])
-        if not x or not y then
-            Notify('Uso: /emotepreview pos <x 0..1> <y 0..1>', 'error')
+    end
+
+    if what == 'cam' then
+        local x, y, z = tonumber(args[2]), tonumber(args[3]), tonumber(args[4])
+        if not x or not y or not z then
+            Notify('Uso: /emotepreview cam <x> <y> <z>', 'error')
             return
         end
-        Config.PreviewScreenX, Config.PreviewScreenY = x, y
-        Notify(('Posicao: x=%.2f y=%.2f'):format(x, y))
-        return
-    elseif what == 'depth' then
-        local d = tonumber(args[2])
-        if not d then
-            Notify('Uso: /emotepreview depth <metros>', 'error')
+        Config.StudioCamOffset = vec3(x, y, z)
+        Notify(('Camera: %.2f, %.2f, %.2f'):format(x, y, z))
+    elseif what == 'fov' then
+        local n = tonumber(args[2])
+        if not n then
+            Notify('Uso: /emotepreview fov <n>', 'error')
             return
         end
-        Config.PreviewDepth = d
-        Notify(('Profundidade: %.2f m'):format(d))
-        return
-    elseif what == 'blur' then
-        Config.PreviewBlur = not Config.PreviewBlur
-        if Config.PreviewBlur then
-            SetTimecycleModifier('hud_def_blur')
-            SetTimecycleModifierStrength(1.0)
-        else
+        Config.StudioCamFov = n
+        Notify(('FOV: %.1f'):format(n))
+    elseif what == 'lateral' then
+        local n = tonumber(args[2])
+        if not n then
+            Notify('Uso: /emotepreview lateral <n>', 'error')
+            return
+        end
+        Config.StudioCamLateral = n
+        Notify(('Offset lateral: %.2f'):format(n))
+    elseif what == 'rot' then
+        local n = tonumber(args[2])
+        if not n then
+            Notify('Uso: /emotepreview rot <graus>', 'error')
+            return
+        end
+        Config.StudioHeading = n
+        Notify(('Heading: %.1f'):format(n))
+    elseif what == 'tc' then
+        Config.StudioTimecycle = args[2] and tostring(args[2]) or ''
+        if Config.StudioTimecycle == '' then
             ClearTimecycleModifier()
+            Notify('Timecycle limpo.')
+        else
+            SetTimecycleModifier(Config.StudioTimecycle)
+            SetTimecycleModifierStrength(1.0)
+            Notify(('Timecycle: %s'):format(Config.StudioTimecycle))
         end
-        Notify(('Blur = %s'):format(tostring(Config.PreviewBlur)))
         return
-    elseif what == 'sleep' then
-        Config.PreviewSleepState = not Config.PreviewSleepState
-        Notify(('SleepState = %s'):format(tostring(Config.PreviewSleepState)))
-    elseif what == 'regive' then
-        Config.PreviewRegiveOnPlay = not Config.PreviewRegiveOnPlay
-        Notify(('RegiveOnPlay = %s'):format(tostring(Config.PreviewRegiveOnPlay)))
-    elseif what == 'slot' then
-        local slot = tonumber(args[2])
-        if not slot then
-            Notify('Uso: /emotepreview slot <numero>', 'error')
-            return
+    elseif what == 'dof' then
+        Config.StudioDof = not Config.StudioDof
+        Notify(('DOF: %s'):format(tostring(Config.StudioDof)))
+    elseif what == 'daytime' then
+        Config.StudioForceDaytime = not Config.StudioForceDaytime
+        if Config.StudioForceDaytime then
+            NetworkOverrideClockTime(12, 0, 0)
+        else
+            NetworkClearClockTimeOverride()
         end
-        Config.PreviewPedSlot = slot
-        Notify(('PedSlot = %d'):format(slot))
+        Notify(('Luz de dia forcada: %s'):format(tostring(Config.StudioForceDaytime)))
+        return
     elseif what == 'replay' then
         local current = GetPreviewingEmote()
         if not current then
@@ -285,44 +352,29 @@ RegisterCommand('emotepreview', function(_source, args)
             return
         end
         PreviewEmote(current)
-        Notify(('Reaplicado: %s'):format(current))
         return
-    else
-        local d = GetPreviewDiagnostics()
-
-        -- Vai para o console (F8) em vez de notificacao: sao muitas linhas, e
-        -- de la da para copiar o texto.
+    elseif what == 'dump' then
+        local o = Config.StudioCamOffset
         lib.print.info(table.concat({
             '',
-            '=== preview do mri_Qemotemenu ===',
-            ('  modo            %s   blur=%s'):format(tostring(d.mode), tostring(Config.PreviewBlur)),
-            ('  world           x=%.2f y=%.2f depth=%.2f')
-                :format(Config.PreviewScreenX, Config.PreviewScreenY, Config.PreviewDepth),
-            ('  scaleform       sleep=%s  regive=%s  slot=%s')
-                :format(tostring(Config.PreviewSleepState), tostring(Config.PreviewRegiveOnPlay),
-                    tostring(Config.PreviewPedSlot)),
-            ('  preview ativo   %s'):format(tostring(d.previewActive)),
-            ('  pause menu      %s'):format(tostring(d.pauseMenuOpen)),
-            ('  ped handle      %s (existe: %s)'):format(tostring(d.pedHandle), tostring(d.pedExists)),
-            ('  ped visivel     %s   congelado: %s'):format(tostring(d.pedVisible), tostring(d.pedFrozen)),
-            ('  distancia       %.2f m'):format(d.distanceToPed),
-            ('  emote           %s'):format(tostring(d.emote)),
-            ('  dict / anim     %s / %s'):format(tostring(d.emoteDict), tostring(d.emoteAnim)),
-            ('  dict carregado  %s'):format(tostring(d.dictLoaded)),
-            ('  tocando a anim  %s'):format(tostring(d.playingAnim)),
-            '',
-            '  /emotepreview sleep   alterna SetPauseMenuPedSleepState',
-            '  /emotepreview regive  alterna a reentrega do ped apos a animacao',
-            '  /emotepreview slot N  muda a posicao do ped na tela',
-            '  /emotepreview replay  reaplica o ultimo emote em preview',
+            '-- cole em shared/config.lua',
+            ("Config.StudioCoords = vec3(%.2f, %.2f, %.2f)")
+                :format(Config.StudioCoords.x, Config.StudioCoords.y, Config.StudioCoords.z),
+            ("Config.StudioHeading = %.2f"):format(Config.StudioHeading),
+            ("Config.StudioCamOffset = vec3(%.2f, %.2f, %.2f)"):format(o.x, o.y, o.z),
+            ("Config.StudioCamFov = %.1f"):format(Config.StudioCamFov),
+            ("Config.StudioCamLateral = %.2f"):format(Config.StudioCamLateral),
+            ("Config.StudioDof = %s"):format(tostring(Config.StudioDof)),
+            ("Config.StudioTimecycle = '%s'"):format(Config.StudioTimecycle),
+            ("Config.StudioForceDaytime = %s"):format(tostring(Config.StudioForceDaytime)),
             '',
         }, '\n'))
-
-        Notify('Diagnostico do preview no console (F8).')
+        Notify('Config atual no console (F8).')
+        return
+    else
+        previewStatus()
         return
     end
 
-    -- Reaplica no ped que ja esta em preview, para o efeito ser imediato.
-    local current = GetPreviewingEmote()
-    if current then PreviewEmote(current) end
+    reapplyPreview()
 end, false)

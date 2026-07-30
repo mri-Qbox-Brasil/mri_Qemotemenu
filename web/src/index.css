@@ -69,17 +69,17 @@ body {
   font-family: 'Saira', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* ATENÇÃO AO PORTAR DA gh-arenapaintball:
-   lá o `.bg-stage` é um gradiente OPACO em inset:0, que cobriria o ped da
-   scaleform. Aqui o fundo escurece só as laterais e deixa a coluna do meio
-   completamente limpa — é por ali que o ped do pause menu aparece. */
+/* Scrim de leitura. A coluna do meio fica LIMPA — é por ali que o ped
+   renderizado pelo jogo aparece; qualquer coisa opaca ali o esconde.
+   No modo estúdio o fundo já é controlado, então o gradiente aqui é leve: só o
+   suficiente para o texto não competir com o cenário. */
 .emote-backdrop {
   position: fixed;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(to right, hsl(240 10% 4% / 0.92) 0%, hsl(240 10% 4% / 0.75) 28%, transparent 42%),
-    linear-gradient(to left, hsl(240 10% 4% / 0.92) 0%, hsl(240 10% 4% / 0.7) 20%, transparent 34%);
+    linear-gradient(to right, hsl(240 10% 4% / 0.82) 0%, hsl(240 10% 4% / 0.55) 26%, transparent 40%),
+    linear-gradient(to left, hsl(240 10% 4% / 0.82) 0%, hsl(240 10% 4% / 0.5) 18%, transparent 32%);
 }
 
 /* Coluna reservada ao ped renderizado pelo jogo. Não desenhar nada opaco. */

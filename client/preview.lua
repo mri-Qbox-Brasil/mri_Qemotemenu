@@ -2,21 +2,25 @@
 
 -- Preview de emote num ped clonado. Dois modos, escolhidos por Config.PreviewMode.
 --
--- 'world' (padrao)
+-- 'studio' (padrao)
+--   O clone e teleportado para um ponto isolado e uma camera propria enquadra
+--   ele. Fundo limpo, iluminacao previsivel, enquadramento identico sempre.
+--   A camera e a do retrato do qbx_core (client/character.lua:130-174), que ja
+--   resolve o enquadramento fora do centro via PointCamAtPedBone com offset
+--   lateral — e o que libera o resto da tela para a interface.
+--
+-- 'world'
 --   O clone fica visivel no mundo, reposicionado a cada frame na frente da
---   camera, na altura da coluna central vazia da NUI. E a tecnica que o proprio
---   rpemotes-reborn usava (client/Utils.lua, ShowPedMenu).
+--   camera do jogo. Tecnica do proprio rpemotes-reborn (Utils.lua, ShowPedMenu).
+--   Mais leve (nao troca a camera, nao streama area nova), mas o ped pega a
+--   iluminacao do lugar e pode encostar em geometria.
 --
--- 'scaleform'
---   Entrega o clone para a scaleform do pause menu, como a gh-arenapaintball
---   faz (src/client/modules/home.ts:15-88).
---
--- Por que 'world' e o padrao: o diagnostico in-game mostrou que, no modo
--- scaleform, o clone existia, tinha o dict carregado e estava DE FATO tocando a
--- animacao (`IsEntityPlayingAnim` = true) — mas o pause menu nao o desenhava, e
--- ainda reativava a visibilidade dele no mundo, deixando um sosia animando em
--- cima do jogador. A referencia da arena so mostra um ped parado, entao nunca
--- houve prova de que aquela scaleform aceita animacao arbitraria.
+-- NAO existe modo 'scaleform'. O GivePedToPauseMenu desenha o ped mas ignora
+-- qualquer task de animacao enquanto o pause menu esta ativo — confirmado na
+-- documentacao do native, em duas discussoes de quem tentou o mesmo caso de uso,
+-- e no nosso proprio diagnostico in-game (o clone reportava
+-- `IsEntityPlayingAnim = true` enquanto a scaleform desenhava a pose dela).
+-- A unica animacao que aquela scaleform aceita e a de dormir, que e dela.
 
 ---@type number? handle do ped clonado (lido por props.lua e emote.lua)
 PreviewPed = nil
@@ -24,12 +28,19 @@ PreviewActive = false
 
 local previewingEmote = nil
 local tickRunning = false
+local previewCam = nil
+local playerWasFrozen = false
 
-local function isScaleform()
-    return Config.PreviewMode == 'scaleform'
+local HEAD_BONE = 31086
+
+local function isStudio()
+    return Config.PreviewMode == 'studio'
 end
 
----Cria o clone local do jogador.
+-- ============================================================
+-- Clone
+-- ============================================================
+
 ---@return boolean
 local function spawnClone()
     local ped = cache.ped
@@ -50,10 +61,96 @@ local function spawnClone()
 end
 
 -- ============================================================
+-- Modo 'studio'
+-- ============================================================
+
+---Posiciona o clone no estudio e forca o streaming da area em volta dele.
+local function placeCloneInStudio()
+    local coords = Config.StudioCoords
+
+    SetEntityCoordsNoOffset(PreviewPed, coords.x, coords.y, coords.z, false, false, false)
+    SetEntityHeading(PreviewPed, Config.StudioHeading)
+    SetEntityVisible(PreviewPed, true, false)
+    SetEntityAlpha(PreviewPed, 255, false)
+
+    -- Sem isto o jogo continua streamando ao redor do jogador e o estudio pode
+    -- aparecer vazio no primeiro frame.
+    SetFocusEntity(PreviewPed)
+
+    if Config.StudioLoadScene then
+        NewLoadSceneStartSphere(coords.x, coords.y, coords.z, 20.0, 0)
+        local deadline = GetGameTimer() + 2000
+        while not IsNewLoadSceneLoaded() and GetGameTimer() < deadline do
+            Wait(0)
+        end
+        NewLoadSceneStop()
+    end
+end
+
+---Camera do retrato. Portada de qbx_core/client/character.lua:139-152.
+local function setupStudioCam()
+    local offset = Config.StudioCamOffset
+    local coords = GetOffsetFromEntityInWorldCoords(PreviewPed, offset.x, offset.y, 0.0)
+
+    previewCam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
+    SetCamActive(previewCam, true)
+
+    -- Corte seco, nao interpolado. O qbx_core usa blend porque la o ped ja esta
+    -- no local; aqui o estudio fica do outro lado do mapa, e interpolar faria a
+    -- camera atravessar o mundo inteiro voando ate chegar la.
+    local blend = Config.StudioCamBlend or 0
+    RenderScriptCams(true, blend > 0, blend, true, false)
+
+    SetCamCoord(previewCam, coords.x, coords.y, coords.z + offset.z)
+    SetCamFov(previewCam, Config.StudioCamFov)
+    SetCamRot(previewCam, 0.0, 0.0, GetEntityHeading(PreviewPed) + 180.0, 2)
+
+    -- O offset lateral e o que empurra o ped para um lado do quadro, liberando o
+    -- resto da tela para a NUI. Sem ele o ped fica centralizado atras da lista.
+    PointCamAtPedBone(previewCam, PreviewPed, HEAD_BONE, Config.StudioCamLateral, 0.0, 0.03, true)
+
+    if Config.StudioDof then
+        SetCamUseShallowDofMode(previewCam, true)
+        SetCamNearDof(previewCam, 1.2)
+        SetCamFarDof(previewCam, 12.0)
+        SetCamDofStrength(previewCam, 1.0)
+        SetCamDofMaxNearInFocusDistance(previewCam, 1.0)
+    end
+end
+
+local function destroyStudioCam()
+    if not previewCam then return end
+
+    RenderScriptCams(false, false, 0, true, true)
+    SetCamActive(previewCam, false)
+    DestroyCam(previewCam, true)
+    previewCam = nil
+end
+
+local function runStudioTick()
+    CreateThread(function()
+        while tickRunning do
+            -- O DOF raso so vale se isto for chamado a cada frame
+            -- (ver 0r-multicharacterv3/client/main.lua:446-453).
+            if Config.StudioDof then
+                SetUseHiDof()
+            end
+
+            DisableAllControlActions(0)
+            EnableControlAction(0, 245, true) -- chat
+
+            InvalidateIdleCam()
+            InvalidateVehicleIdleCam()
+
+            Wait(0)
+        end
+    end)
+end
+
+-- ============================================================
 -- Modo 'world'
 -- ============================================================
 
----Mantem o clone plantado na frente da camera, na coluna central da NUI.
 local function runWorldTick()
     CreateThread(function()
         -- Media movel das ultimas posicoes: sem isso o ped treme junto com
@@ -82,41 +179,6 @@ local function runWorldTick()
 end
 
 -- ============================================================
--- Modo 'scaleform'
--- ============================================================
-
-local function runScaleformTick()
-    CreateThread(function()
-        while tickRunning do
-            DisableAllControlActions(0)
-            EnableControlAction(0, 1, true)   -- look left/right
-            EnableControlAction(0, 2, true)   -- look up/down
-            EnableControlAction(0, 245, true) -- chat
-
-            -- Impede o jogador de fechar o frontend por baixo da NUI.
-            DisableControlAction(0, 177, true)
-            DisableControlAction(0, 200, true)
-            DisableControlAction(0, 202, true)
-            DisableControlAction(0, 322, true)
-
-            InvalidateIdleCam()
-            InvalidateVehicleIdleCam()
-
-            -- O frontend reaplica o estado do ped a cada frame — inclusive a
-            -- visibilidade, o que deixa o clone aparecendo no mundo em cima do
-            -- jogador. Por isso reforcamos os tres aqui.
-            SetPauseMenuPedSleepState(Config.PreviewSleepState)
-            SetPauseMenuPedLighting(true)
-            if PreviewPed and DoesEntityExist(PreviewPed) then
-                SetEntityVisible(PreviewPed, false, false)
-            end
-
-            Wait(0)
-        end
-    end)
-end
-
--- ============================================================
 -- API
 -- ============================================================
 
@@ -127,34 +189,38 @@ function OpenPreview()
     if PreviewActive then return true end
     if not spawnClone() then return false end
 
-    if isScaleform() then
-        SetEntityVisible(PreviewPed, false, false)
+    if Config.FreezePlayerWhileOpen then
+        playerWasFrozen = IsEntityPositionFrozen(cache.ped)
+        FreezeEntityPosition(cache.ped, true)
+    end
 
-        ActivateFrontendMenu(`FE_MENU_VERSION_EMPTY_NO_BACKGROUND`, false, -1)
+    if isStudio() then
+        placeCloneInStudio()
+        setupStudioCam()
 
-        -- Obrigatorio: sem esse respiro a engine ainda nao montou o menu e o
-        -- ped simplesmente nao aparece, sem erro nenhum.
-        Wait(100)
+        if Config.StudioTimecycle and Config.StudioTimecycle ~= '' then
+            SetTimecycleModifier(Config.StudioTimecycle)
+            SetTimecycleModifierStrength(1.0)
+        end
 
-        GivePedToPauseMenu(PreviewPed, Config.PreviewPedSlot)
-        SetPauseMenuPedLighting(true)
-        SetPauseMenuPedSleepState(Config.PreviewSleepState)
-        SetMouseCursorVisibleInMenus(false)
+        if Config.StudioForceDaytime then
+            NetworkOverrideClockTime(12, 0, 0)
+        end
     else
         SetEntityVisible(PreviewPed, true, false)
         SetEntityAlpha(PreviewPed, 255, false)
-    end
 
-    if Config.PreviewBlur then
-        SetTimecycleModifier('hud_def_blur')
-        SetTimecycleModifierStrength(1.0)
+        if Config.PreviewBlur then
+            SetTimecycleModifier('hud_def_blur')
+            SetTimecycleModifierStrength(1.0)
+        end
     end
 
     PreviewActive = true
     tickRunning = true
 
-    if isScaleform() then
-        runScaleformTick()
+    if isStudio() then
+        runStudioTick()
     else
         runWorldTick()
     end
@@ -188,16 +254,7 @@ function PreviewEmote(name, textureVariation)
 
     -- PlayEmoteOnPed e nao OnEmotePlay: o segundo e global e pode estar
     -- embrulhado por outro modulo (ver client/emote.lua).
-    local ok = PlayEmoteOnPed(name, textureVariation, PreviewPed)
-    if not ok then return false end
-
-    if isScaleform() and Config.PreviewRegiveOnPlay then
-        GivePedToPauseMenu(PreviewPed, Config.PreviewPedSlot)
-        SetPauseMenuPedSleepState(Config.PreviewSleepState)
-        SetPauseMenuPedLighting(true)
-    end
-
-    return true
+    return PlayEmoteOnPed(name, textureVariation, PreviewPed)
 end
 
 function ClearPreviewEmote()
@@ -227,34 +284,33 @@ function GetPreviewDiagnostics()
     end
 
     return {
-        mode           = Config.PreviewMode,
-        previewActive  = PreviewActive,
-        pauseMenuOpen  = IsPauseMenuActive(),
-        pedHandle      = ped or 0,
-        pedExists      = alive,
-        pedVisible     = alive and IsEntityVisible(ped) or false,
-        pedFrozen      = alive and IsEntityPositionFrozen(ped) or false,
-        emote          = previewingEmote,
-        emoteDict      = emote and emote.dict or nil,
-        emoteAnim      = emote and emote.anim or nil,
-        dictLoaded     = (emote and emote.dict) and HasAnimDictLoaded(emote.dict) or false,
-        playingAnim    = playing,
-        distanceToPed  = alive and #(GetEntityCoords(cache.ped) - GetEntityCoords(ped)) or -1,
+        mode          = Config.PreviewMode,
+        previewActive = PreviewActive,
+        camHandle     = previewCam or 0,
+        camExists     = previewCam and DoesCamExist(previewCam) or false,
+        camRendering  = IsCamRendering and previewCam and IsCamRendering(previewCam) or false,
+        pedHandle     = ped or 0,
+        pedExists     = alive,
+        pedVisible    = alive and IsEntityVisible(ped) or false,
+        pedCoords     = alive and GetEntityCoords(ped) or nil,
+        emote         = previewingEmote,
+        emoteDict     = emote and emote.dict or nil,
+        emoteAnim     = emote and emote.anim or nil,
+        dictLoaded    = (emote and emote.dict) and HasAnimDictLoaded(emote.dict) or false,
+        playingAnim   = playing,
     }
 end
 
----Fecha o preview. A ordem importa: tick -> cursor -> frontend -> ped ->
----timecycle. Trocar a ordem deixa ped fantasma na tela ou blur preso.
+---Fecha o preview. A ordem importa: tick -> camera -> ped -> jogador ->
+---timecycle. Errar deixa a tela presa na camera do estudio ou o mundo borrado.
 function ClosePreview()
     if not PreviewActive then return end
 
     tickRunning = false
     previewingEmote = nil
 
-    if isScaleform() then
-        SetMouseCursorVisibleInMenus(true)
-        SetFrontendActive(false)
-    end
+    destroyStudioCam()
+    ClearFocus()
 
     DestroyAllProps(true)
 
@@ -263,11 +319,30 @@ function ClosePreview()
     end
     PreviewPed = nil
 
-    -- Sem isto o mundo fica borrado depois que o menu fecha.
+    if Config.FreezePlayerWhileOpen and not playerWasFrozen then
+        FreezeEntityPosition(cache.ped, false)
+    end
+    playerWasFrozen = false
+
     ClearTimecycleModifier()
     SetTimecycleModifierStrength(1.0)
 
+    if Config.StudioForceDaytime then
+        NetworkClearClockTimeOverride()
+    end
+
     PreviewActive = false
+end
+
+---Reaplica a camera com os valores atuais do Config. Usado pela calibracao
+---(/emotepreview), para nao precisar reiniciar o resource a cada ajuste.
+function RefreshPreviewCam()
+    if not PreviewActive or not isStudio() then return false end
+
+    destroyStudioCam()
+    SetEntityHeading(PreviewPed, Config.StudioHeading)
+    setupStudioCam()
+    return true
 end
 
 ---Export usado pelo core_cinematics para excluir o ped de preview das gravacoes

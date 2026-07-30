@@ -95,6 +95,7 @@
     "ClearPreviewEmote",
     "GetPreviewingEmote",
     "GetPreviewDiagnostics",
+    "RefreshPreviewCam",
 
     "MenuIsOpen",
     "CanFireEmoteBind",
