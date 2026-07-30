@@ -1,0 +1,11 @@
+node_modules/
+.release/node_modules/
+dist/
+config/user.lua
+.env
+
+# Assets de animação (~402 MB) — packs de terceiros herdados do rpemotes-reborn,
+# incluindo material redistribuído sem licença clara. Ficam em disco no servidor
+# mas NÃO sobem para o GitHub da org.
+# Para publicar o resource completo em release, remova esta linha e use LFS.
+stream/

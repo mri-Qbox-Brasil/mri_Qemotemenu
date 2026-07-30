@@ -1,0 +1,5 @@
+node_modules
+# O build entra no recurso: o servidor roda direto do checkout, entao
+# `build` FICA versionado. Nao ignore.
+*.log
+.DS_Store
