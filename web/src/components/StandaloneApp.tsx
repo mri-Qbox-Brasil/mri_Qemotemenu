@@ -48,8 +48,15 @@ export function StandaloneApp() {
         <section className="flex min-h-0 flex-col gap-3">
           <header>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Emotes</h1>
+            {/* Andar e Humor não têm pré-visualização: walkstyle só aparece com o
+                ped andando, e expressão é só o rosto. Dizer isso evita o "o
+                preview não funciona" quando na verdade não há o que mostrar. */}
             <p className="text-xs text-muted-foreground">
-              Passe o mouse para pré-visualizar, clique para executar.
+              {isWalks
+                ? 'Clique para aplicar. Estilos de andar não têm pré-visualização.'
+                : isMoods
+                  ? 'Clique para aplicar. A expressão muda só o rosto do personagem.'
+                  : 'Passe o mouse para pré-visualizar, clique para executar.'}
             </p>
           </header>
 
@@ -59,14 +66,17 @@ export function StandaloneApp() {
             placeholder="Buscar em todas as categorias..."
           />
 
-          {/* bg-transparent sobrepõe o `bg-muted/50` do kit (tailwind-merge
-              resolve o conflito): sem isso a barra de abas vira uma caixa preta
-              flutuando sobre o jogo. */}
+          {/* O container do MriSegmentedTabs vem com
+              "border border-border backdrop-blur-sm shadow-inner" + "bg-muted".
+              Sobre um NUI transparente isso vira uma barra preta flutuando no
+              meio do jogo — o `backdrop-blur-sm` é o que mais escurece, porque
+              borra o que está atrás. Anulamos os quatro; tailwind-merge resolve
+              o conflito em favor do que passamos aqui. */}
           <MriSegmentedTabs
             items={tabs}
             value={menu.category}
             onChange={menu.setCategory}
-            className="flex-wrap bg-transparent p-0 gap-1"
+            className="flex-wrap bg-transparent backdrop-blur-none border-transparent shadow-none p-0"
           />
 
           <div className="min-h-0 flex-1 rounded-xl border border-border bg-card/50">

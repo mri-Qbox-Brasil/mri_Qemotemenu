@@ -53,8 +53,11 @@ function OpenPreview()
     SetPauseMenuPedSleepState(false)  -- o ped precisa animar
     SetMouseCursorVisibleInMenus(false)
 
-    -- A gh-arenapaintball aplica `hud_def_blur` aqui. Nao usamos: o borrao
-    -- atrapalha a leitura do proprio ped de preview, que e o ponto do menu.
+    -- Mesmo timecycle da gh-arenapaintball: borra o mundo atras do menu e
+    -- destaca o ped. Nao tem relacao com o fundo escuro da NUI, que vem do
+    -- backdrop-blur do proprio ui-kit na barra de abas.
+    SetTimecycleModifier('hud_def_blur')
+    SetTimecycleModifierStrength(1.0)
 
     PreviewActive = true
 
