@@ -28,10 +28,14 @@ function OpenEmoteMenu()
     end
 
     MenuIsOpen = true
-    OpenPreview()
 
+    -- Ordem igual a da gh-arenapaintball (src/client/main.ts:11-33): foco da NUI
+    -- primeiro, frontend do pause menu depois. OpenPreview tem um Wait(100)
+    -- interno, entao inverter a ordem faz a tela demorar a aparecer.
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'setVisible', visible = true, data = buildPayload() })
+
+    OpenPreview()
 end
 
 function CloseEmoteMenu()

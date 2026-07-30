@@ -59,11 +59,14 @@ export function StandaloneApp() {
             placeholder="Buscar em todas as categorias..."
           />
 
+          {/* bg-transparent sobrepõe o `bg-muted/50` do kit (tailwind-merge
+              resolve o conflito): sem isso a barra de abas vira uma caixa preta
+              flutuando sobre o jogo. */}
           <MriSegmentedTabs
             items={tabs}
             value={menu.category}
             onChange={menu.setCategory}
-            className="flex-wrap"
+            className="flex-wrap bg-transparent p-0 gap-1"
           />
 
           <div className="min-h-0 flex-1 rounded-xl border border-border bg-card/50">

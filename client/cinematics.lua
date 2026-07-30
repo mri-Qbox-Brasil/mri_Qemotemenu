@@ -136,46 +136,58 @@ CreateThread(function()
         Wait(100)
     end
 
+    -- ATENÇÃO: estes wrappers têm que repassar TODOS os argumentos e o valor de
+    -- retorno. O `OnEmotePlay` deste resource ganhou um terceiro parâmetro
+    -- (`targetPed`) que o do rpemotes não tinha — engolir esse argumento faz o
+    -- preview do menu tocar no ped real do jogador em vez do clone.
+
     -- Emote start
     local _origOnEmotePlay = OnEmotePlay
-    OnEmotePlay = function(name, textureVariation)
-        _origOnEmotePlay(name, textureVariation)
-        -- Só publica se a função original confirmou o emote
-        if IsInAnimation and CurrentAnimationName == name then
+    OnEmotePlay = function(name, textureVariation, targetPed)
+        local result = _origOnEmotePlay(name, textureVariation, targetPed)
+
+        -- Emote tocado num ped alvo (preview do menu, NPC do mri_Qnpc) não é o
+        -- emote do jogador: não entra no state bag de gravação.
+        if not targetPed and IsInAnimation and CurrentAnimationName == name then
             currentEmoteName = name
             currentEmoteVar  = textureVariation or CurrentTextureVariation
             publishState()
         end
+
+        return result
     end
 
     -- Emote cancel
     local _origEmoteCancel = EmoteCancel
     EmoteCancel = function(force)
-        _origEmoteCancel(force)
+        local result = _origEmoteCancel(force)
         if not IsInAnimation then
             currentEmoteName = nil
             currentEmoteVar  = nil
             publishState()
         end
+        return result
     end
 
     -- Walk set
     local _origSetWalkStyle = SetWalkStyle
     SetWalkStyle = function(name, force)
-        _origSetWalkStyle(name, force)
+        local result = _origSetWalkStyle(name, force)
         local data = name and EmoteData and EmoteData[name]
         if isWalkEntry(data) then
             currentWalkName = name
             publishState()
         end
+        return result
     end
 
     -- Walk reset
     local _origResetWalkStyle = ResetWalkStyle
     ResetWalkStyle = function()
-        _origResetWalkStyle()
+        local result = _origResetWalkStyle()
         currentWalkName = nil
         publishState()
+        return result
     end
 end)
 

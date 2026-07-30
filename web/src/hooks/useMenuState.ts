@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchNui } from '@/nui/fetchNui'
 import { useNuiEvent } from '@/nui/useNuiEvent'
 import type { EmoteEntry, MenuPayload, SlotId, SlotMap } from '@/types'
@@ -65,13 +65,35 @@ export function useMenuState() {
     void fetchNui('playEmote', { name: entry.name, variation })
   }, [])
 
+  // Cada preview carrega um anim dict no cliente. Varrer a lista com o mouse
+  // dispararia um por item atravessado, então só pedimos depois que o cursor
+  // parar. O destaque na lista continua imediato.
+  const previewTimer = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+    },
+    [],
+  )
+
   const preview = useCallback((entry: EmoteEntry | null) => {
     setSelected(entry?.name ?? null)
+
+    if (previewTimer.current !== null) {
+      window.clearTimeout(previewTimer.current)
+      previewTimer.current = null
+    }
+
     if (!entry) {
       void fetchNui('clearPreview')
       return
     }
-    void fetchNui('previewEmote', { name: entry.name })
+
+    previewTimer.current = window.setTimeout(() => {
+      previewTimer.current = null
+      void fetchNui('previewEmote', { name: entry.name })
+    }, 120)
   }, [])
 
   const close = useCallback(() => {

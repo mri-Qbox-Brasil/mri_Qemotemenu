@@ -460,6 +460,25 @@ function OnEmotePlay(name, textureVariation, targetPed)
     return true
 end
 
+-- Referencia ao motor capturada AGORA, no load deste arquivo.
+--
+-- `OnEmotePlay` e um global e existe pelo menos um wrapper legitimo em cima dele
+-- (client/cinematics.lua, que espelha o emote ativo para o core_cinematics).
+-- Um wrapper que esqueca de repassar o 3o argumento faria o preview do menu
+-- tocar no ped REAL do jogador. Quem toca em ped alvo passa por aqui e nao
+-- depende de wrapper nenhum se comportar.
+local engine = OnEmotePlay
+
+---Toca um emote num ped especifico (preview do menu, NPC).
+---@param name string
+---@param textureVariation? integer
+---@param targetPed number
+---@return boolean
+function PlayEmoteOnPed(name, textureVariation, targetPed)
+    if not targetPed or targetPed == 0 then return false end
+    return engine(name, textureVariation, targetPed) and true or false
+end
+
 ---Emotes de animal so funcionam se o player estiver com o ped certo.
 ---@param name string
 local function checkAnimalAndPlay(name)

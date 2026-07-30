@@ -53,8 +53,8 @@ function OpenPreview()
     SetPauseMenuPedSleepState(false)  -- o ped precisa animar
     SetMouseCursorVisibleInMenus(false)
 
-    SetTimecycleModifier('hud_def_blur')
-    SetTimecycleModifierStrength(1.0)
+    -- A gh-arenapaintball aplica `hud_def_blur` aqui. Nao usamos: o borrao
+    -- atrapalha a leitura do proprio ped de preview, que e o ponto do menu.
 
     PreviewActive = true
 
@@ -106,7 +106,9 @@ function PreviewEmote(name, textureVariation)
     DestroyAllProps(true)
     ClearPedTasks(PreviewPed)
 
-    return OnEmotePlay(name, textureVariation, PreviewPed)
+    -- PlayEmoteOnPed e nao OnEmotePlay: o segundo e global e pode estar
+    -- embrulhado por outro modulo (ver client/emote.lua).
+    return PlayEmoteOnPed(name, textureVariation, PreviewPed)
 end
 
 function ClearPreviewEmote()
@@ -138,9 +140,6 @@ function ClosePreview()
         DeleteEntity(PreviewPed)
     end
     PreviewPed = nil
-
-    ClearTimecycleModifier()
-    SetTimecycleModifierStrength(1.0)
 
     PreviewActive = false
 end

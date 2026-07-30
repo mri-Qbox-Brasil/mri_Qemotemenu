@@ -114,7 +114,7 @@ local function playEmoteByCommand(command, variant, ped)
     if emote.category == Category.WALKS then return end
 
     if ped and ped ~= cache.ped then
-        OnEmotePlay(command:lower(), variant, ped)
+        PlayEmoteOnPed(command:lower(), variant, ped)
         return
     end
 

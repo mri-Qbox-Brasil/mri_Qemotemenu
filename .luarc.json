@@ -55,6 +55,7 @@
     "CurrentTextureVariation",
     "InHandsup",
     "OnEmotePlay",
+    "PlayEmoteOnPed",
     "EmoteCancel",
     "EmoteMenuStart",
     "EmoteCommandStart",
