@@ -209,3 +209,53 @@ end, false)
 RegisterCommand('emoteguard', function()
     DumpInputGuard()
 end, false)
+
+-- Bancada do preview. O comportamento do ped dentro da scaleform do pause menu
+-- nao e documentado e varia por gamebuild, entao em vez de chutar valores no
+-- config e reiniciar o resource a cada tentativa, dá para alterná-los com o
+-- menu aberto e ver o resultado na hora.
+RegisterCommand('emotepreview', function(_source, args)
+    local what = args[1] and tostring(args[1]):lower() or nil
+
+    if what == 'sleep' then
+        Config.PreviewSleepState = not Config.PreviewSleepState
+        Notify(('SleepState = %s'):format(tostring(Config.PreviewSleepState)))
+    elseif what == 'regive' then
+        Config.PreviewRegiveOnPlay = not Config.PreviewRegiveOnPlay
+        Notify(('RegiveOnPlay = %s'):format(tostring(Config.PreviewRegiveOnPlay)))
+    elseif what == 'slot' then
+        local slot = tonumber(args[2])
+        if not slot then
+            Notify('Uso: /emotepreview slot <numero>', 'error')
+            return
+        end
+        Config.PreviewPedSlot = slot
+        Notify(('PedSlot = %d'):format(slot))
+    elseif what == 'replay' then
+        local current = GetPreviewingEmote()
+        if not current then
+            Notify('Nenhum emote em preview. Passe o mouse por um antes.', 'error')
+            return
+        end
+        PreviewEmote(current)
+        Notify(('Reaplicado: %s'):format(current))
+        return
+    else
+        NotifyLong(table.concat({
+            'Bancada do preview:',
+            '/emotepreview sleep   — alterna SetPauseMenuPedSleepState',
+            '/emotepreview regive  — alterna a reentrega do ped apos a animacao',
+            '/emotepreview slot N  — muda a posicao do ped na tela',
+            '/emotepreview replay  — reaplica o ultimo emote em preview',
+            ('Agora: sleep=%s regive=%s slot=%s'):format(
+                tostring(Config.PreviewSleepState),
+                tostring(Config.PreviewRegiveOnPlay),
+                tostring(Config.PreviewPedSlot)),
+        }, '\n'))
+        return
+    end
+
+    -- Reaplica no ped que ja esta em preview, para o efeito ser imediato.
+    local current = GetPreviewingEmote()
+    if current then PreviewEmote(current) end
+end, false)

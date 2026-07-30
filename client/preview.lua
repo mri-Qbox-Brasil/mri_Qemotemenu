@@ -48,9 +48,9 @@ function OpenPreview()
     -- simplesmente nao aparece, sem erro nenhum.
     Wait(100)
 
-    GivePedToPauseMenu(PreviewPed, 2) -- slot 2 = ped a direita do centro
+    GivePedToPauseMenu(PreviewPed, Config.PreviewPedSlot)
     SetPauseMenuPedLighting(true)
-    SetPauseMenuPedSleepState(false)  -- o ped precisa animar
+    SetPauseMenuPedSleepState(Config.PreviewSleepState)
     SetMouseCursorVisibleInMenus(false)
 
     -- Mesmo timecycle da gh-arenapaintball: borra o mundo atras do menu e
@@ -78,6 +78,12 @@ function OpenPreview()
 
             InvalidateIdleCam()
             InvalidateVehicleIdleCam()
+
+            -- O frontend reaplica o proprio estado do ped a cada frame. Se
+            -- setarmos sleep/lighting so uma vez no open, ele volta a dormir e
+            -- a task de emote nunca aparece.
+            SetPauseMenuPedSleepState(Config.PreviewSleepState)
+            SetPauseMenuPedLighting(true)
 
             Wait(0)
         end
@@ -111,7 +117,19 @@ function PreviewEmote(name, textureVariation)
 
     -- PlayEmoteOnPed e nao OnEmotePlay: o segundo e global e pode estar
     -- embrulhado por outro modulo (ver client/emote.lua).
-    return PlayEmoteOnPed(name, textureVariation, PreviewPed)
+    local ok = PlayEmoteOnPed(name, textureVariation, PreviewPed)
+    if not ok then return false end
+
+    if Config.PreviewRegiveOnPlay then
+        -- O frontend parece congelar o estado do ped no momento do
+        -- GivePedToPauseMenu. Reentregar depois de aplicar a task e o que faz
+        -- a animacao nova chegar na tela.
+        GivePedToPauseMenu(PreviewPed, Config.PreviewPedSlot)
+        SetPauseMenuPedSleepState(Config.PreviewSleepState)
+        SetPauseMenuPedLighting(true)
+    end
+
+    return true
 end
 
 function ClearPreviewEmote()

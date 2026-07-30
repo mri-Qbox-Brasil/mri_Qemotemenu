@@ -15,6 +15,22 @@ Config.CancelEmoteKey = 'f6'
 
 Config.PreviewPed = true -- preview do emote num ped clonado (scaleform do pause menu)
 
+-- Ajustes finos do preview. O comportamento do ped dentro da scaleform do pause
+-- menu nao e documentado, entao estes tres ficam expostos: use /emotepreview
+-- para alterna-los in-game e achar a combinacao que anima no seu gamebuild.
+--
+--   PreviewPedSlot      posicao do ped na tela. A gh-arenapaintball usa 2
+--                       (direita do centro). Outros valores movem/ocultam.
+--   PreviewSleepState   SetPauseMenuPedSleepState. `false` deveria deixar o ped
+--                       animar; se ele continuar dormindo, tente `true` — o
+--                       nome do nativo sugere um sentido e pode ser o inverso.
+--   PreviewRegiveOnPlay reentrega o ped ao menu depois de aplicar a animacao.
+--                       O frontend parece congelar o estado do ped no momento
+--                       do GivePedToPauseMenu; sem isso a task nova nao sobe.
+Config.PreviewPedSlot = 2
+Config.PreviewSleepState = false
+Config.PreviewRegiveOnPlay = true
+
 -- ============================================================
 -- Favoritos nas setas
 -- ============================================================
