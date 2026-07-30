@@ -13,23 +13,34 @@ Config.MenuKeybind = 'f5'
 Config.CancelKeybindEnabled = true
 Config.CancelEmoteKey = 'f6'
 
-Config.PreviewPed = true -- preview do emote num ped clonado (scaleform do pause menu)
+Config.PreviewPed = true -- preview do emote num ped clonado
 
--- Ajustes finos do preview. O comportamento do ped dentro da scaleform do pause
--- menu nao e documentado, entao estes tres ficam expostos: use /emotepreview
--- para alterna-los in-game e achar a combinacao que anima no seu gamebuild.
+-- 'world'     — clone visivel, plantado na frente da camera na coluna central
+--               da NUI. Tecnica do proprio rpemotes (Utils.lua, ShowPedMenu).
+-- 'scaleform' — clone entregue a scaleform do pause menu, como a
+--               gh-arenapaintball faz.
 --
---   PreviewPedSlot      posicao do ped na tela. A gh-arenapaintball usa 2
---                       (direita do centro). Outros valores movem/ocultam.
---   PreviewSleepState   SetPauseMenuPedSleepState. Lido como "o controlador de
---                       ped DO MENU dorme": com `true` o frontend para de
---                       dirigir o ped e a nossa TaskPlayAnim sobrevive. Com
---                       `false` o menu manda, e o ped fica no idle dele — que
---                       e o que se via antes.
---   PreviewRegiveOnPlay reentregar o ped ao menu depois de aplicar a animacao
---                       FAZ ELE SUMIR da tela: GivePedToPauseMenu num ped que
---                       o menu ja exibe desanexa em vez de atualizar. Fica
---                       desligado; so mexa para testar.
+-- 'world' e o padrao porque o diagnostico in-game mostrou que, no modo
+-- scaleform, o clone estava vivo e DE FATO tocando a animacao, mas o pause menu
+-- nao o desenhava — e ainda reativava a visibilidade dele no mundo, deixando um
+-- sosia animando em cima do jogador.
+Config.PreviewMode = 'world'
+
+Config.PreviewBlur = true -- SetTimecycleModifier('hud_def_blur') com o menu aberto
+
+-- Modo 'world': onde plantar o ped. X/Y sao coordenadas de tela (0..1) e batem
+-- com a coluna central vazia do layout da NUI.
+Config.PreviewScreenX = 0.50
+Config.PreviewScreenY = 0.82
+Config.PreviewDepth = 3.2          -- metros a frente da camera
+Config.PreviewHeadingOffset = 180.0 -- 180 = de frente para a camera
+
+-- Modo 'scaleform'. Use /emotepreview para alternar in-game.
+--   PreviewPedSlot      posicao do ped na tela; a arena usa 2 (direita do centro)
+--   PreviewSleepState   `true` faz o controlador de ped DO MENU parar de dirigir
+--                       o ped, deixando a nossa TaskPlayAnim sobreviver
+--   PreviewRegiveOnPlay reentregar o ped ao menu depois da animacao o FAZ SUMIR
+--                       (GivePedToPauseMenu desanexa em vez de atualizar)
 Config.PreviewPedSlot = 2
 Config.PreviewSleepState = true
 Config.PreviewRegiveOnPlay = false

@@ -217,7 +217,54 @@ end, false)
 RegisterCommand('emotepreview', function(_source, args)
     local what = args[1] and tostring(args[1]):lower() or nil
 
-    if what == 'sleep' then
+    if what == 'mode' then
+        local wanted = args[2] and tostring(args[2]):lower() or nil
+        if wanted ~= 'world' and wanted ~= 'scaleform' then
+            Notify('Uso: /emotepreview mode <world|scaleform>', 'error')
+            return
+        end
+
+        -- Precisa reabrir: os dois modos montam o ped de formas diferentes.
+        local wasOpen = PreviewActive
+        local current = GetPreviewingEmote()
+        ClosePreview()
+        Config.PreviewMode = wanted
+        if wasOpen then
+            OpenPreview()
+            if current then PreviewEmote(current) end
+        end
+
+        Notify(('Modo do preview: %s'):format(wanted), 'success')
+        return
+    elseif what == 'pos' then
+        local x, y = tonumber(args[2]), tonumber(args[3])
+        if not x or not y then
+            Notify('Uso: /emotepreview pos <x 0..1> <y 0..1>', 'error')
+            return
+        end
+        Config.PreviewScreenX, Config.PreviewScreenY = x, y
+        Notify(('Posicao: x=%.2f y=%.2f'):format(x, y))
+        return
+    elseif what == 'depth' then
+        local d = tonumber(args[2])
+        if not d then
+            Notify('Uso: /emotepreview depth <metros>', 'error')
+            return
+        end
+        Config.PreviewDepth = d
+        Notify(('Profundidade: %.2f m'):format(d))
+        return
+    elseif what == 'blur' then
+        Config.PreviewBlur = not Config.PreviewBlur
+        if Config.PreviewBlur then
+            SetTimecycleModifier('hud_def_blur')
+            SetTimecycleModifierStrength(1.0)
+        else
+            ClearTimecycleModifier()
+        end
+        Notify(('Blur = %s'):format(tostring(Config.PreviewBlur)))
+        return
+    elseif what == 'sleep' then
         Config.PreviewSleepState = not Config.PreviewSleepState
         Notify(('SleepState = %s'):format(tostring(Config.PreviewSleepState)))
     elseif what == 'regive' then
@@ -248,7 +295,10 @@ RegisterCommand('emotepreview', function(_source, args)
         lib.print.info(table.concat({
             '',
             '=== preview do mri_Qemotemenu ===',
-            ('  config          sleep=%s  regive=%s  slot=%s')
+            ('  modo            %s   blur=%s'):format(tostring(d.mode), tostring(Config.PreviewBlur)),
+            ('  world           x=%.2f y=%.2f depth=%.2f')
+                :format(Config.PreviewScreenX, Config.PreviewScreenY, Config.PreviewDepth),
+            ('  scaleform       sleep=%s  regive=%s  slot=%s')
                 :format(tostring(Config.PreviewSleepState), tostring(Config.PreviewRegiveOnPlay),
                     tostring(Config.PreviewPedSlot)),
             ('  preview ativo   %s'):format(tostring(d.previewActive)),

@@ -72,6 +72,8 @@ Opções em `shared/config.lua`.
 | `MenuKeybind` | `f5` | Tecla que abre o menu. |
 | `CancelEmoteKey` | `f6` | Tecla que cancela o emote. |
 | `PreviewPed` | `true` | Preview do personagem no menu. |
+| `PreviewMode` | `'world'` | Como o ped de preview é desenhado. Ver abaixo. |
+| `PreviewBlur` | `true` | Desfoca o mundo enquanto o menu está aberto. |
 | `FavoriteSlots` | 4 setas | Slots de atalho e seus padrões de fábrica. |
 | `InputGuard` | todos ligados | Liga ou desliga cada sinal de detecção. |
 | `AdultEmotesDisabled` | `false` | Esconde emotes marcados como adultos. |
@@ -85,6 +87,32 @@ Opções em `shared/config.lua`.
 | `RagdollEnabled` | `false` | Ragdoll manual. |
 | `BinocularsEnabled` / `NewscamEnabled` | `false` | Binóculos e câmera de reportagem. |
 | `SaveDebounce` | `5000` | Milissegundos entre a última alteração e a gravação no banco. |
+
+### Modos de preview
+
+| Modo | Como funciona |
+|---|---|
+| `world` (padrão) | O clone fica visível no mundo, reposicionado a cada frame na frente da câmera, na altura da coluna central vazia da interface. É a técnica que o rpemotes usava. |
+| `scaleform` | O clone é entregue à scaleform do menu de pausa do jogo, como a `gh-arenapaintball` faz. |
+
+O `world` é o padrão porque, em teste, o modo `scaleform` deixava o clone vivo e
+de fato tocando a animação — mas o menu de pausa não o desenhava, e ainda
+reativava a visibilidade dele no mundo, o que fazia aparecer um sósia animando
+em cima do jogador.
+
+Para calibrar sem reiniciar o resource, com o menu aberto:
+
+| Comando | Efeito |
+|---|---|
+| `/emotepreview` | Despeja o diagnóstico completo no console (F8). |
+| `/emotepreview mode <world\|scaleform>` | Troca de modo na hora. |
+| `/emotepreview pos <x> <y>` | Move o ped na tela (coordenadas de 0 a 1). |
+| `/emotepreview depth <metros>` | Aproxima ou afasta o ped da câmera. |
+| `/emotepreview blur` | Liga/desliga o desfoque do mundo. |
+| `/emotepreview replay` | Reaplica o último emote pré-visualizado. |
+
+O diagnóstico é o que separa "a entidade sumiu" de "está viva e animando, mas
+não está sendo desenhada" — dois problemas que na tela parecem o mesmo.
 
 ## Administração
 
