@@ -99,7 +99,10 @@ end
 ---@param emote string?
 ---@return boolean
 function SetWheelSlot(slot, emote)
-    slot = tonumber(slot) or 0
+    -- Inteiro obrigatorio: um 1.5 passaria na faixa e gravaria em wheel[1.5],
+    -- que o getWheel() (for i = 1, N) nunca le. O slot sumiria em silencio e
+    -- ainda ocuparia espaco no JSON salvo.
+    slot = math.tointeger(tonumber(slot)) or 0
     if slot < 1 or slot > Config.WheelSlots then return false end
 
     if emote ~= nil then

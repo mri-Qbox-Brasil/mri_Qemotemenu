@@ -25,6 +25,14 @@ end
 
 function OpenEmoteMenu()
     if MenuIsOpen then return end
+
+    -- Morto nao emota, e abrir aqui prenderia o jogador: o menu segura o foco da
+    -- NUI e congela o ped por cima da tela de morte.
+    if IsEntityDead(cache.ped) then
+        Notify(locale('dead'), 'error')
+        return
+    end
+
     if not AwaitCatalog(5000) then
         Notify(locale('catalog_loading'), 'error')
         return
@@ -48,6 +56,13 @@ function CloseEmoteMenu()
     SetNuiFocus(false, false)
     SendNUIMessage({ action = 'setVisible', visible = false })
     ClosePreview()
+
+    -- Favorito, apelido, slot e roda sao todos editados aqui dentro, e o
+    -- SaveSetting segura o envio por Config.SaveDebounce. Quem fecha o menu e
+    -- sai do jogo dentro desse intervalo perderia a alteracao: o
+    -- OnPlayerUnload nao chega a rodar num alt-F4. Fechar o menu e o momento
+    -- em que o jogador terminou de editar, entao descarrega aqui.
+    FlushSettings()
 end
 
 function ToggleEmoteMenu()
@@ -57,6 +72,19 @@ function ToggleEmoteMenu()
         OpenEmoteMenu()
     end
 end
+
+-- Morrer com o menu aberto deixaria o jogador preso: foco de NUI travado e ped
+-- congelado por cima da tela de morte, brigando com o script de ambulancia.
+-- `baseevents` dispara este evento localmente no client
+-- (resources/[cfx-default]/[system]/baseevents/deathevents.lua:43) e esta no
+-- ensure do server.cfg.
+AddEventHandler('baseevents:onPlayerDied', function()
+    CloseEmoteMenu()
+end)
+
+AddEventHandler('baseevents:onPlayerKilled', function()
+    CloseEmoteMenu()
+end)
 
 -- ============================================================
 -- Callbacks

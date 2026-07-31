@@ -177,6 +177,10 @@ local function checkAvailability()
 end
 
 CreateThread(function()
+    -- Antes de qualquer uso de RP: se a ordem do fxmanifest quebrar, o erro tem
+    -- que dizer o que houve, e nao um "index a nil value" tres linhas abaixo.
+    assert(RP ~= nil, 'RP nao existe — data/animations.lua nao carregou antes de client/catalog.lua')
+
     if not Config.AnimalEmotesEnabled then
         RP.AnimalEmotes = {}
     end
@@ -184,7 +188,6 @@ CreateThread(function()
     LoadAddonEmotes()
 
     local flat = {}
-    assert(RP ~= nil, 'RP nao existe — data/animations.lua nao carregou antes de client/catalog.lua')
 
     for emoteType, content in pairs(RP) do
         for emoteName, emoteData in pairs(content) do
@@ -250,8 +253,13 @@ function SetEmoteNickname(name, nickname)
     local nicknames = GetSetting('nicknames')
     if type(nicknames) ~= 'table' then nicknames = {} end
 
+    -- So string vira apelido. Sem este filtro, um payload com tabela ou numero
+    -- passava reto pelos dois testes abaixo e estourava no `:sub()` — e o erro
+    -- mata o RegisterNUICallback antes do `cb`, deixando a NUI pendurada.
     if type(nickname) == 'string' then
         nickname = nickname:gsub('^%s+', ''):gsub('%s+$', '')
+    elseif nickname ~= nil then
+        return false
     end
 
     if not nickname or nickname == '' then

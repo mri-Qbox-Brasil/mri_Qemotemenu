@@ -5,6 +5,8 @@ import { displayName } from '@/types'
 
 interface Props {
   entries: EmoteEntry[]
+  /** Muda quando a lista trocou de conteúdo (aba/busca) e a rolagem deve voltar ao topo. */
+  resetKey: string
   favorites: string[]
   nicknames: NicknameMap
   wheel: Wheel
@@ -31,6 +33,7 @@ const OVERSCAN = 8
 
 export function EmoteList({
   entries,
+  resetKey,
   favorites,
   nicknames,
   wheel,
@@ -69,10 +72,15 @@ export function EmoteList({
 
   // Trocar de aba ou buscar muda a lista inteira: sem voltar ao topo, o usuário
   // fica olhando para um vazio no meio de uma lista curta.
+  //
+  // O gatilho é `resetKey` (categoria + busca), e não a identidade de `entries`:
+  // favoritar ou renomear também gera um array novo, e voltar ao topo nessas
+  // horas tira o usuário de onde ele estava — justamente na linha em que acabou
+  // de clicar.
   useEffect(() => {
     viewportRef.current?.scrollTo({ top: 0 })
     setScrollTop(0)
-  }, [entries])
+  }, [resetKey])
 
   useEffect(() => {
     if (editing) inputRef.current?.focus()
