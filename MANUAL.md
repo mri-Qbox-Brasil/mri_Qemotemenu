@@ -2,9 +2,9 @@
 
 ## Visão Geral
 
-Sistema de emotes do servidor: catálogo completo de animações, menu em NUI com preview do personagem, atalhos nas setas e preferências salvas por personagem.
+Sistema de emotes do servidor: catálogo completo de animações, menu em NUI com preview do personagem, roda de emotes, atalhos nas setas e preferências salvas por personagem.
 
-Nasceu como substituto do `rpemotes-reborn`. O catálogo de animações e os assets de stream são os mesmos, entrada por entrada — nenhum emote foi renomeado ou removido na migração, inclusive os que tinham nome divergente do que fazem.
+O catálogo traz alguns nomes que não descrevem bem o que o emote faz. Eles foram mantidos como estão de propósito, para não quebrar quem já usava o comando — e é justamente para isso que existe o renomear, que deixa cada jogador ajustar o nome para si.
 
 ## Funcionalidades
 
@@ -29,7 +29,7 @@ Cada seta resolve o emote em três níveis, do mais forte para o mais fraco:
 
 Consequência prática: quando um administrador troca o padrão de uma seta, **quem já personalizou aquele slot não sente diferença**. A mudança só alcança quem estava no padrão.
 
-Padrões de fábrica, herdados do rpemotes-reborn:
+Padrões de fábrica:
 
 | Seta | Emote |
 |---|---|
@@ -142,20 +142,12 @@ Opções em `shared/config.lua`.
 | `studio` (padrão) | Um clone do personagem é levado para um ponto isolado e uma câmera própria o enquadra. Fundo limpo, iluminação previsível e o mesmo enquadramento sempre, de dia ou de madrugada. |
 | `world` | O clone fica visível no mundo, reposicionado a cada frame na frente da câmera do jogo. Mais leve — não troca a câmera nem carrega área nova — mas pega a iluminação do lugar e pode encostar em parede ou carro. |
 
-#### Por que não existe modo "menu de pausa"
-
-Uma versão anterior entregava o clone à scaleform do menu de pausa do jogo
-(`GivePedToPauseMenu`), que dá um enquadramento e uma iluminação muito bons.
-**Ela não pode mostrar emote**, e isso é uma limitação do próprio jogo, não um
-defeito de configuração: aquela scaleform desenha o ped mas ignora qualquer
-animação que a gente mande. A única que ela aceita é a de dormir, que é dela.
-
-Foi confirmado por quatro caminhos: a documentação do native, dois relatos de
-quem tentou exatamente este caso de uso, e o nosso próprio diagnóstico in-game —
-o clone reportava estar tocando a animação enquanto a tela mostrava a pose dela.
-
-Não vale tentar de novo. Se a intenção for um **retrato parado** do personagem,
-aí sim ela serve.
+> **Nota para quem for mexer no preview:** existe um caminho no jogo que desenha
+> o ped no menu de pausa (`GivePedToPauseMenu`), com enquadramento e iluminação
+> muito bons. Ele **não serve aqui**: aquele render ignora qualquer animação que
+> o script mande, e a única que aceita é a de dormir, que é dele. Já foi tentado
+> e descartado com o ped confirmadamente executando a animação enquanto a tela
+> mostrava outra pose. Serve para retrato parado, não para preview de emote.
 
 #### Calibrar o enquadramento
 
