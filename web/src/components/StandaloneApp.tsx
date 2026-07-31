@@ -187,6 +187,7 @@ export function StandaloneApp() {
           slot={editing}
           slots={menu.data.slots}
           catalog={menu.data.catalog}
+          nicknames={menu.data.nicknames}
           onSave={menu.setSlot}
           onClose={() => setEditing(null)}
         />

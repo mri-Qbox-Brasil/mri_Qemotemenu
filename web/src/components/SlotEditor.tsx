@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import { MriButton, MriInput, MriKbd, MriModal, MriScrollArea, MriSearchInput } from '@mriqbox/ui-kit'
-import { RotateCcw } from 'lucide-react'
-import type { EmoteEntry, SlotId, SlotMap } from '@/types'
-import { SLOT_GLYPH, SLOT_LABEL } from '@/types'
+import { AlertTriangle, RotateCcw } from 'lucide-react'
+import type { EmoteEntry, NicknameMap, SlotId, SlotMap } from '@/types'
+import { SLOT_GLYPH, SLOT_LABEL, displayName } from '@/types'
 
 interface Props {
   slot: SlotId
   slots: SlotMap
   catalog: EmoteEntry[]
+  nicknames: NicknameMap
   onSave: (slot: SlotId, emote?: string, label?: string) => Promise<boolean> | boolean
   onClose: () => void
 }
@@ -17,7 +18,7 @@ interface Props {
  * um nome próprio ao atalho. Salvar sem nome mantém o label do emote; o botão
  * "voltar ao padrão" limpa o override e devolve o slot ao default do servidor.
  */
-export function SlotEditor({ slot, slots, catalog, onSave, onClose }: Props) {
+export function SlotEditor({ slot, slots, catalog, nicknames, onSave, onClose }: Props) {
   const current = slots[slot]
   const [emote, setEmote] = useState<string>(current?.emote ?? '')
   const [label, setLabel] = useState<string>(current?.label ?? '')
@@ -30,9 +31,14 @@ export function SlotEditor({ slot, slots, catalog, onSave, onClose }: Props) {
     const usable = catalog.filter((e) => e.category !== 'Walks' && e.category !== 'Expressions')
     if (!term) return usable.slice(0, 120)
     return usable
-      .filter((e) => e.label.toLowerCase().includes(term) || e.name.toLowerCase().includes(term))
+      .filter(
+        (e) =>
+          e.label.toLowerCase().includes(term) ||
+          e.name.toLowerCase().includes(term) ||
+          (nicknames[e.name] ?? '').toLowerCase().includes(term),
+      )
       .slice(0, 120)
-  }, [catalog, search])
+  }, [catalog, nicknames, search])
 
   const save = async (nextEmote?: string, nextLabel?: string) => {
     setBusy(true)
@@ -88,7 +94,18 @@ export function SlotEditor({ slot, slots, catalog, onSave, onClose }: Props) {
                       : 'text-foreground hover:bg-muted'
                   }`}
                 >
-                  <span className="truncate">{entry.label}</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    {entry.missing && (
+                      <span
+                        className="shrink-0"
+                        title="Este emote não está disponível neste cliente."
+                        aria-label="indisponível"
+                      >
+                        <AlertTriangle className="h-3 w-3 text-destructive" />
+                      </span>
+                    )}
+                    <span className="truncate">{displayName(entry, nicknames)}</span>
+                  </span>
                   <span className="ml-3 shrink-0 text-[11px] text-muted-foreground">
                     /e {entry.name}
                   </span>
