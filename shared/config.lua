@@ -237,3 +237,56 @@ Config.AdminAce = 'command.mriqemotemenu'
 -- ============================================================
 
 Config.SaveDebounce = 5000 -- ms entre a ultima alteracao e o flush no banco
+
+-- ============================================================
+-- HUD
+-- ============================================================
+
+-- Esconde a HUD enquanto o menu esta aberto e devolve ao fechar. O preview e
+-- uma cena montada com camera propria: barra de fome, minimapa e velocimetro
+-- por cima dela nao fazem sentido.
+Config.HideHudWhileOpen = true
+
+-- HUD nativa do GTA (minimapa, estrelas de procurado, dinheiro). Precisa ser
+-- suprimida a cada frame, entao vive num thread proprio enquanto o menu esta
+-- aberto — ver client/hud.lua.
+Config.HideNativeHudWhileOpen = true
+
+---HUDs em NUI. Cada uma tem o seu jeito de sumir, entao a integracao e uma
+---entrada aqui em vez de codigo espalhado: `resource` e o que o
+---`GetResourceState` testa, e so entra em acao quando aquele resource esta no ar.
+---
+---Toda chamada roda dentro de pcall, e o `show` so e executado se o `hide`
+---correspondente tiver funcionado — senao um erro de contrato do vendor deixaria
+---a HUD do jogador escondida para sempre.
+---
+---> **mri_Qhud nao esta aqui de proposito.** Ele nao expoe nada: zero exports e
+---> nenhum evento de visibilidade global, so `hud:client:*` por widget
+---> (conferido no client.lua dele). Para integrar, adicione do lado do mri_Qhud:
+---> ```lua
+---> RegisterNetEvent('hud:client:setVisible', function(visible)
+--->     SendNUIMessage({ action = 'hudtick', show = visible })
+---> end)
+---> ```
+---> e destrave a entrada comentada abaixo. Sem isso nao ha o que chamar — o
+---> loop dele reescreve o `hudtick` no tick seguinte de qualquer forma.
+Config.HudIntegrations = {
+    {
+        resource = 'ghds_advancedhud',
+        -- Os dois nomes tem caixa diferente mesmo (hideHUD / showHud), e e
+        -- assim no resource: ghds_advancedhud/client/main.lua:356 e :364.
+        hide = function() TriggerEvent('ghds_advancedhud:client:hideHUD') end,
+        show = function() TriggerEvent('ghds_advancedhud:client:showHud') end,
+    },
+    {
+        resource = 'jg-hud',
+        -- https://docs.jgscripts.com/hud/exports
+        hide = function() exports['jg-hud']:toggleHud(false) end,
+        show = function() exports['jg-hud']:toggleHud(true) end,
+    },
+    -- {
+    --     resource = 'mri_Qhud',
+    --     hide = function() TriggerEvent('hud:client:setVisible', false) end,
+    --     show = function() TriggerEvent('hud:client:setVisible', true) end,
+    -- },
+}

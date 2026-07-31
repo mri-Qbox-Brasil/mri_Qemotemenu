@@ -149,6 +149,46 @@ Opções em `shared/config.lua`.
 > e descartado com o ped confirmadamente executando a animação enquanto a tela
 > mostrava outra pose. Serve para retrato parado, não para preview de emote.
 
+### HUD com o menu aberto
+
+A HUD sai da frente ao abrir o menu e volta ao fechar. São dois problemas
+diferentes, resolvidos de formas diferentes em `client/hud.lua`:
+
+**HUD nativa do GTA** (minimapa, estrelas de procurado, dinheiro). Os natives de
+esconder valem por um frame só, então rodam num thread enquanto o menu está
+aberto. Não há nada a restaurar: parar de chamar já devolve. Desliga em
+`Config.HideNativeHudWhileOpen`.
+
+**HUD em NUI** (`ghds_advancedhud`, `jg-hud`, ...). Cada uma some do seu jeito, e
+a lista está em `Config.HudIntegrations`. Aqui é ida e volta, e é onde mora o
+risco: se a ida falhar e a volta rodar assim mesmo, o jogador fica sem HUD depois
+de fechar o menu. Por isso o módulo guarda uma trava por integração e **só
+devolve o que ele mesmo escondeu** — uma HUD que já estava escondida por outro
+motivo continua escondida, porque o estado dela não é nosso.
+
+Se a HUD reiniciar com o menu aberto, ela volta desenhada e a trava passaria a
+mentir; há um `onClientResourceStart` que reaplica. E um `onResourceStop` devolve
+tudo se este resource cair com o menu aberto — senão o jogador ficaria sem HUD e
+sem nada para clicar que a trouxesse de volta.
+
+Desliga tudo de uma vez em `Config.HideHudWhileOpen`.
+
+#### Integrar o mri_Qhud
+
+Ele não está na lista porque não expõe nada — nenhum export, nenhum evento de
+visibilidade global, só `hud:client:*` por widget. Não adianta mandar `hudtick`
+de fora: o loop dele reescreve no tick seguinte.
+
+Para integrar, adicione do lado do `mri_Qhud`:
+
+```lua
+RegisterNetEvent('hud:client:setVisible', function(visible)
+    SendNUIMessage({ action = 'hudtick', show = visible })
+end)
+```
+
+e destrave a entrada já comentada em `Config.HudIntegrations`.
+
 #### Calibrar o enquadramento
 
 Com o menu aberto, sem reiniciar o resource:

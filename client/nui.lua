@@ -46,6 +46,7 @@ function OpenEmoteMenu()
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'setVisible', visible = true, data = buildPayload() })
 
+    HideGameHud()
     OpenPreview()
 end
 
@@ -56,6 +57,7 @@ function CloseEmoteMenu()
     SetNuiFocus(false, false)
     SendNUIMessage({ action = 'setVisible', visible = false })
     ClosePreview()
+    ShowGameHud()
 
     -- Favorito, apelido, slot e roda sao todos editados aqui dentro, e o
     -- SaveSetting segura o envio por Config.SaveDebounce. Quem fecha o menu e

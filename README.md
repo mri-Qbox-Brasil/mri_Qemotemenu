@@ -37,6 +37,33 @@ Tudo em `shared/config.lua`.
 |---|---|
 | `mri_Qadmin` | registra a tela de administração dos padrões como plugin do painel |
 | `core_cinematics` | integração de gravação via `client/cinematics.lua` |
+| `ghds_advancedhud`, `jg-hud` | a HUD some enquanto o menu está aberto e volta ao fechar |
+
+### HUD
+
+Com o menu aberto a HUD sai da frente e volta ao fechar — o preview é uma cena
+montada com câmera própria, e barra de fome ou minimapa por cima dela não fazem
+sentido. Vale para a HUD nativa do GTA e para as HUDs em NUI reconhecidas.
+
+Cada HUD tem o seu jeito de sumir, então a lista fica em `Config.HudIntegrations`
+e é só acrescentar uma entrada para integrar outra:
+
+```lua
+{
+    resource = 'nome-da-hud',
+    hide = function() exports['nome-da-hud']:toggleHud(false) end,
+    show = function() exports['nome-da-hud']:toggleHud(true) end,
+}
+```
+
+A entrada só entra em ação quando aquele resource está no ar, e o `show` só roda
+se o `hide` tiver funcionado — assim um erro do lado da HUD não deixa o jogador
+sem ela depois de fechar o menu.
+
+> **`mri_Qhud` não está na lista** porque ele não expõe nada: nenhum export e
+> nenhum evento de visibilidade global, só `hud:client:*` por widget. Para
+> integrar, o evento precisa existir do lado dele primeiro — o `MANUAL.md` tem o
+> trecho pronto.
 
 ### Permissões
 

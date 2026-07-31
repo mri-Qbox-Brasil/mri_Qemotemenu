@@ -55,6 +55,7 @@ client_scripts {
     "client/favorites.lua",
     "client/wheel.lua",
     "client/preview.lua",
+    "client/hud.lua",
     "client/nui.lua",
     "client/commands.lua",
     "client/compat.lua",
