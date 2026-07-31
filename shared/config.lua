@@ -260,16 +260,13 @@ Config.HideNativeHudWhileOpen = true
 ---correspondente tiver funcionado — senao um erro de contrato do vendor deixaria
 ---a HUD do jogador escondida para sempre.
 ---
----> **mri_Qhud nao esta aqui de proposito.** Ele nao expoe nada: zero exports e
----> nenhum evento de visibilidade global, so `hud:client:*` por widget
----> (conferido no client.lua dele). Para integrar, adicione do lado do mri_Qhud:
----> ```lua
----> RegisterNetEvent('hud:client:setVisible', function(visible)
---->     SendNUIMessage({ action = 'hudtick', show = visible })
----> end)
----> ```
----> e destrave a entrada comentada abaixo. Sem isso nao ha o que chamar — o
----> loop dele reescreve o `hudtick` no tick seguinte de qualquer forma.
+---> **mri_Qhud precisa da contraparte dele.** Ele nao expunha nada — zero
+---> exports e nenhum evento de visibilidade global, so `hud:client:*` por
+---> widget. O `hud:client:setVisible` foi adicionado do lado dele (client.lua,
+---> perto do `restartHud`) e e um flag que o loop de update respeita, junto do
+---> teste de menu de pausa que ja existia ali. Num mri_Qhud sem esse trecho a
+---> entrada abaixo simplesmente nao faz efeito: o `GetResourceState` passa, o
+---> evento e disparado e ninguem escuta.
 Config.HudIntegrations = {
     {
         resource = 'ghds_advancedhud',
@@ -284,9 +281,9 @@ Config.HudIntegrations = {
         hide = function() exports['jg-hud']:toggleHud(false) end,
         show = function() exports['jg-hud']:toggleHud(true) end,
     },
-    -- {
-    --     resource = 'mri_Qhud',
-    --     hide = function() TriggerEvent('hud:client:setVisible', false) end,
-    --     show = function() TriggerEvent('hud:client:setVisible', true) end,
-    -- },
+    {
+        resource = 'mri_Qhud',
+        hide = function() TriggerEvent('hud:client:setVisible', false) end,
+        show = function() TriggerEvent('hud:client:setVisible', true) end,
+    },
 }

@@ -173,21 +173,41 @@ sem nada para clicar que a trouxesse de volta.
 
 Desliga tudo de uma vez em `Config.HideHudWhileOpen`.
 
-#### Integrar o mri_Qhud
+#### O caso do mri_Qhud
 
-Ele não está na lista porque não expõe nada — nenhum export, nenhum evento de
-visibilidade global, só `hud:client:*` por widget. Não adianta mandar `hudtick`
-de fora: o loop dele reescreve no tick seguinte.
+Ele não expunha nada — nenhum export, nenhum evento de visibilidade global, só
+`hud:client:*` por widget. E mandar `hudtick` de fora não resolve: o loop de
+update dele reescreve no tick seguinte.
 
-Para integrar, adicione do lado do `mri_Qhud`:
+Então a contraparte foi adicionada no próprio `mri_Qhud` (`client.lua`), como um
+flag que o loop respeita, no mesmo ponto em que ele já tratava o menu de pausa:
 
 ```lua
+local hudHidden = false
+
 RegisterNetEvent('hud:client:setVisible', function(visible)
-    SendNUIMessage({ action = 'hudtick', show = visible })
+    hudHidden = not visible
 end)
 ```
 
-e destrave a entrada já comentada em `Config.HudIntegrations`.
+```lua
+if IsPauseMenuActive() or hudHidden then
+    show = false
+end
+```
+
+O `show` alimenta as duas HUDs dele (`updatePlayerHud` e `updateVehicleHud`),
+então um ponto só cobre jogador e veículo.
+
+Foi preciso mexer também no `restartHud` (o `/resethud`), que mandava
+`hudtick show = true` direto. Esses envios passam por fora do `updatePlayerHud`
+e não atualizam o `prevPlayerStats`, então um `true` ali com a HUD escondida
+ficaria: no tick seguinte o loop calcula `show = false`, compara com o `prev`
+(que ainda diz `false`), conclui que nada mudou e não reenvia — a HUD voltaria e
+ficaria visível. Passou a mandar `not hudHidden`.
+
+> Num `mri_Qhud` sem esse trecho, a entrada em `Config.HudIntegrations` não faz
+> efeito: o `GetResourceState` passa, o evento é disparado e ninguém escuta.
 
 #### Calibrar o enquadramento
 

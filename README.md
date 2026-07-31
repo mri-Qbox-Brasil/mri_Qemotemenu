@@ -37,7 +37,7 @@ Tudo em `shared/config.lua`.
 |---|---|
 | `mri_Qadmin` | registra a tela de administração dos padrões como plugin do painel |
 | `core_cinematics` | integração de gravação via `client/cinematics.lua` |
-| `ghds_advancedhud`, `jg-hud` | a HUD some enquanto o menu está aberto e volta ao fechar |
+| `ghds_advancedhud`, `jg-hud`, `mri_Qhud` | a HUD some enquanto o menu está aberto e volta ao fechar |
 
 ### HUD
 
@@ -60,10 +60,10 @@ A entrada só entra em ação quando aquele resource está no ar, e o `show` só
 se o `hide` tiver funcionado — assim um erro do lado da HUD não deixa o jogador
 sem ela depois de fechar o menu.
 
-> **`mri_Qhud` não está na lista** porque ele não expõe nada: nenhum export e
-> nenhum evento de visibilidade global, só `hud:client:*` por widget. Para
-> integrar, o evento precisa existir do lado dele primeiro — o `MANUAL.md` tem o
-> trecho pronto.
+> **O `mri_Qhud` exige uma contraparte nele.** Ele não expunha nada, então o
+> evento `hud:client:setVisible` foi adicionado do lado dele. Num `mri_Qhud` sem
+> esse trecho a integração não faz efeito — o evento é disparado e ninguém
+> escuta. O `MANUAL.md` explica o que foi feito lá.
 
 ### Permissões
 
