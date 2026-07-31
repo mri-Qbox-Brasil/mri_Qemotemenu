@@ -61,6 +61,10 @@ local function hydrate()
 
     RestoreWalkStyle()
     RestoreExpression()
+
+    -- So depois das settings chegarem: a roda e montada a partir de
+    -- settings.wheel, e registra-la antes deixaria 6 slots vazios no radial.
+    RefreshWheel()
 end
 
 AddEventHandler('onResourceStart', function(resource)

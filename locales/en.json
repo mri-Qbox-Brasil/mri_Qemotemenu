@@ -48,6 +48,14 @@
   "register_crawl": "Crawl",
   "register_ragdoll": "Ragdoll",
 
+  "wheel_root": "Emotes",
+  "wheel_empty": "Empty",
+  "wheel_empty_hint": "Empty slot. Equip an emote from the menu (F5) using the + button.",
+  "wheel_equipped": "Equipped in slot %s.",
+  "wheel_cleared": "Slot %s cleared.",
+  "nickname_set": "Renamed to \"%s\".",
+  "nickname_cleared": "Original name restored.",
+
   "camera": "Press G to use the camera flash.",
   "candle": "Press G to light the candle.",
   "cut": "Press G to cut.",

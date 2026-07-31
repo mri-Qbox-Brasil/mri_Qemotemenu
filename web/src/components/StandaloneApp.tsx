@@ -5,11 +5,13 @@ import { useMenuState } from '@/hooks/useMenuState'
 import { EmoteList } from '@/components/EmoteList'
 import { SlotBar } from '@/components/SlotBar'
 import { SlotEditor } from '@/components/SlotEditor'
-import { CATEGORY_LABEL, type SlotId } from '@/types'
+import { WheelPicker } from '@/components/WheelPicker'
+import { CATEGORY_LABEL, type EmoteEntry, type SlotId } from '@/types'
 
 export function StandaloneApp() {
   const menu = useMenuState()
   const [editing, setEditing] = useState<SlotId | null>(null)
+  const [equipping, setEquipping] = useState<EmoteEntry | null>(null)
 
   // ESC fecha. Com SetNuiFocus(true, true) o teclado vai para o CEF, então o
   // Lua não vê a tecla — o fechamento tem que sair daqui.
@@ -17,13 +19,14 @@ export function StandaloneApp() {
     if (!menu.visible) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (editing) setEditing(null)
+        if (equipping) setEquipping(null)
+        else if (editing) setEditing(null)
         else menu.close()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [menu.visible, menu, editing])
+  }, [menu.visible, menu, editing, equipping])
 
   if (!menu.visible) return null
 
@@ -43,7 +46,7 @@ export function StandaloneApp() {
     <div className="relative h-full w-full">
       <div className="emote-backdrop" />
 
-      <div className="relative grid h-full grid-cols-[minmax(340px,1.15fr)_1fr_minmax(280px,0.75fr)] gap-6 p-8">
+      <div className="relative grid h-full grid-cols-[minmax(300px,0.95fr)_1fr_minmax(270px,0.7fr)] gap-6 p-8">
         {/* ---------- Coluna esquerda: catálogo ---------- */}
         <section className="flex min-h-0 flex-col gap-3">
           <header>
@@ -84,21 +87,29 @@ export function StandaloneApp() {
               <EmoteList
                 entries={menu.visibleEmotes}
                 favorites={menu.data.favorites}
+                nicknames={menu.data.nicknames}
+                wheel={menu.data.wheel}
                 selected={isWalks ? (menu.data.walk ?? null) : (menu.data.mood ?? null)}
                 onPlay={(entry) =>
                   isWalks ? void menu.setWalk(entry.name) : void menu.setMood(entry.name)
                 }
                 onPreview={() => undefined}
                 onToggleFavorite={menu.toggleFavorite}
+                onRename={(name, nickname) => void menu.setNickname(name, nickname)}
+                onEquip={setEquipping}
               />
             ) : (
               <EmoteList
                 entries={menu.visibleEmotes}
                 favorites={menu.data.favorites}
+                nicknames={menu.data.nicknames}
+                wheel={menu.data.wheel}
                 selected={menu.selected}
                 onPlay={menu.play}
                 onPreview={menu.preview}
                 onToggleFavorite={menu.toggleFavorite}
+                onRename={(name, nickname) => void menu.setNickname(name, nickname)}
+                onEquip={setEquipping}
               />
             )}
           </div>
@@ -125,6 +136,7 @@ export function StandaloneApp() {
             <SlotBar
               slots={menu.data.slots}
               catalog={menu.data.catalog}
+              nicknames={menu.data.nicknames}
               onEdit={(slot) => setEditing(slot)}
             />
           </div>
@@ -157,6 +169,18 @@ export function StandaloneApp() {
           </MriButton>
         </section>
       </div>
+
+      {equipping && (
+        <WheelPicker
+          entry={equipping}
+          wheel={menu.data.wheel}
+          slots={menu.data.wheelSlots}
+          catalog={menu.data.catalog}
+          nicknames={menu.data.nicknames}
+          onPick={menu.setWheelSlot}
+          onClose={() => setEquipping(null)}
+        />
+      )}
 
       {editing && (
         <SlotEditor

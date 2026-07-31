@@ -22,7 +22,15 @@ export interface EmoteEntry {
   adult?: boolean
   animal?: boolean
   scenario?: boolean
+  /** Preenchido pela varredura do client: 'anim' = dict ausente, 'prop' = modelo ausente. */
+  missing?: 'anim' | 'prop'
 }
+
+/** Apelidos do player, por nome de emote. Só contém o que foi renomeado. */
+export type NicknameMap = Record<string, string>
+
+/** Slots da roda. Posição vazia é `false` — o Lua não usa nil para não virar objeto no JSON. */
+export type Wheel = (string | false)[]
 
 export type SlotId = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
 
@@ -39,10 +47,18 @@ export interface MenuPayload {
   catalog: EmoteEntry[]
   slots: SlotMap
   favorites: string[]
+  nicknames: NicknameMap
+  wheel: Wheel
+  wheelSlots: number
   walk?: string
   mood?: string
   isAdmin: boolean
   arrows: Record<SlotId, number[]>
+}
+
+/** Nome exibido: apelido do player > label do catálogo > nome cru. */
+export function displayName(entry: EmoteEntry, nicknames: NicknameMap): string {
+  return nicknames[entry.name] || entry.label || entry.name
 }
 
 export const SLOT_ORDER: SlotId[] = ['UP', 'DOWN', 'LEFT', 'RIGHT']

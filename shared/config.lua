@@ -40,9 +40,9 @@ Config.StudioHeading = 44.22
 -- StudioCamOffset e relativo ao ped: x = lado, y = frente, z = altura.
 Config.StudioCamOffset = vec3(0.0, 1.6, 0.65)
 Config.StudioCamFov = 38.0
--- Empurra o ped para um lado do quadro e libera o resto da tela para a NUI.
--- Negativo joga para a direita da tela.
-Config.StudioCamLateral = -0.4
+-- Empurra o ped para um lado do quadro. O -0.4 e o valor do qbx_core, calibrado
+-- para o layout DELES; no nosso a coluna do ped e a do meio, entao 0 centraliza.
+Config.StudioCamLateral = 0.0
 -- 0 = corte seco. Qualquer valor > 0 faz a camera INTERPOLAR da posicao do
 -- jogador ate o estudio — ou seja, atravessar o mapa voando. Deixe em 0.
 Config.StudioCamBlend = 0
@@ -66,6 +66,22 @@ Config.PreviewScreenX = 0.50
 Config.PreviewScreenY = 0.82
 Config.PreviewDepth = 3.2           -- metros a frente da camera
 Config.PreviewHeadingOffset = 180.0 -- 180 = de frente para a camera
+
+-- ============================================================
+-- Roda de emotes (radial do ox_lib)
+-- ============================================================
+-- 6 e o teto, nao escolha: o PAGE_ITEMS da NUI do ox_lib e fixo em 6
+-- (resources/[ox]/ox_lib/web/src/features/menu/radial/index.tsx:120). Do 7o item
+-- em diante o slot 6 vira botao "mais", comendo um lugar da roda.
+Config.WheelEnabled = true
+Config.WheelSlots = 6
+
+-- Item raiz da roda. O F1 abre a roda do ox_lib e os emotes ficam dentro deste
+-- item — nao ha como abrir submenu direto (o showRadial e local ao ox_lib).
+Config.WheelRootId = 'emotes'
+Config.WheelMenuId = 'mri_emotewheel'
+Config.WheelRootIcon = 'masks-theater'
+Config.WheelItemIcon = 'person-running' -- icone de cada emote equipado
 
 -- ============================================================
 -- Favoritos nas setas

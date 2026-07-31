@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchNui } from '@/nui/fetchNui'
 import { useNuiEvent } from '@/nui/useNuiEvent'
-import type { EmoteEntry, MenuPayload, SlotId, SlotMap } from '@/types'
+import type { EmoteEntry, MenuPayload, NicknameMap, SlotId, SlotMap, Wheel } from '@/types'
 
 const EMPTY: MenuPayload = {
   catalog: [],
   slots: {},
   favorites: [],
+  nicknames: {},
+  wheel: [],
+  wheelSlots: 6,
   isAdmin: false,
   arrows: {} as MenuPayload['arrows'],
 }
@@ -35,6 +38,16 @@ export function useMenuState() {
     setData((prev) => ({ ...prev, favorites: msg.favorites ?? [] }))
   })
 
+  useNuiEvent<{ wheel: Wheel }>('wheelUpdated', (msg) => {
+    setData((prev) => ({ ...prev, wheel: msg.wheel ?? [] }))
+  })
+
+  // A varredura de disponibilidade termina alguns frames depois do boot; se o
+  // menu já estiver aberto, o catálogo chega marcado por aqui.
+  useNuiEvent<{ catalog: EmoteEntry[] }>('catalogUpdated', (msg) => {
+    if (msg.catalog) setData((prev) => ({ ...prev, catalog: msg.catalog }))
+  })
+
   const categories = useMemo(() => {
     const seen = new Map<string, number>()
     for (const entry of data.catalog) {
@@ -56,10 +69,14 @@ export function useMenuState() {
           : data.catalog.filter((e) => e.category === category)
 
     if (!term) return base
+    // Procura também pelo apelido: quem renomeou espera achar pelo nome que deu.
     return base.filter(
-      (e) => e.label.toLowerCase().includes(term) || e.name.toLowerCase().includes(term),
+      (e) =>
+        e.label.toLowerCase().includes(term) ||
+        e.name.toLowerCase().includes(term) ||
+        (data.nicknames[e.name] ?? '').toLowerCase().includes(term),
     )
-  }, [data.catalog, data.favorites, category, search])
+  }, [data.catalog, data.favorites, data.nicknames, category, search])
 
   const play = useCallback((entry: EmoteEntry, variation?: number) => {
     void fetchNui('playEmote', { name: entry.name, variation })
@@ -115,6 +132,23 @@ export function useMenuState() {
     return Boolean(res?.ok)
   }, [])
 
+  /** Apelido pessoal. String vazia limpa e volta ao nome do catálogo. */
+  const setNickname = useCallback(async (name: string, nickname: string) => {
+    const res = await fetchNui<{ ok: boolean; nicknames: NicknameMap }>('setNickname', {
+      name,
+      nickname,
+    })
+    if (res?.ok) setData((prev) => ({ ...prev, nicknames: res.nicknames ?? {} }))
+    return Boolean(res?.ok)
+  }, [])
+
+  /** Equipa um emote num slot da roda. `emote` undefined esvazia o slot. */
+  const setWheelSlot = useCallback(async (slot: number, emote?: string) => {
+    const res = await fetchNui<{ ok: boolean; wheel: Wheel }>('setWheelSlot', { slot, emote })
+    if (res?.ok && res.wheel) setData((prev) => ({ ...prev, wheel: res.wheel }))
+    return Boolean(res?.ok)
+  }, [])
+
   const setWalk = useCallback(async (name?: string) => {
     await fetchNui('setWalk', { name })
     setData((prev) => ({ ...prev, walk: name }))
@@ -141,6 +175,8 @@ export function useMenuState() {
     cancel,
     toggleFavorite,
     setSlot,
+    setNickname,
+    setWheelSlot,
     setWalk,
     setMood,
   }

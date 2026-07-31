@@ -107,6 +107,75 @@ local function buildIndex()
     CatalogIndex = index
 end
 
+---Marca no indice os emotes cuja animacao (ou prop) nao existe neste cliente.
+---
+---O `LoadAnim` ja testava `DoesAnimDictExist` na hora de tocar; aqui o teste sobe
+---para a lista, para o player ver antes de clicar.
+---
+---Duas coisas evitam que isso segure o boot: os dicts sao deduplicados (sao
+---~3.700 emotes para umas centenas de dicts distintos) e a varredura cede o
+---frame a cada bloco.
+---
+---Cobre tambem os dicts nativos do GTA, que uma varredura da pasta stream/ nao
+---veria. Cenarios nao tem dict e ficam sem verificacao — nao ha nativo barato
+---para isso, e inventar um "existe" falso seria pior que nao marcar.
+local function checkAvailability()
+    local dictCache, propCache = {}, {}
+    local missing, checked = 0, 0
+
+    local function dictExists(dict)
+        local cached = dictCache[dict]
+        if cached ~= nil then return cached end
+        local exists = DoesAnimDictExist(dict) and true or false
+        dictCache[dict] = exists
+        return exists
+    end
+
+    local function propExists(model)
+        local cached = propCache[model]
+        if cached ~= nil then return cached end
+        local exists = IsModelValid(joaat(model)) and true or false
+        propCache[model] = exists
+        return exists
+    end
+
+    for i = 1, #CatalogIndex do
+        local entry = CatalogIndex[i]
+        local emote = EmoteData[entry.name]
+
+        if emote then
+            local reason
+
+            if emote.dict and not dictExists(emote.dict) then
+                reason = 'anim'
+            else
+                local opts = emote.AnimationOptions
+                if opts and opts.Prop and not propExists(opts.Prop) then
+                    reason = 'prop'
+                elseif opts and opts.SecondProp and not propExists(opts.SecondProp) then
+                    reason = 'prop'
+                end
+            end
+
+            if reason then
+                entry.missing = reason
+                missing = missing + 1
+            end
+        end
+
+        checked = checked + 1
+        if checked % 250 == 0 then Wait(0) end
+    end
+
+    if missing > 0 then
+        lib.print.warn(('%d de %d emotes estao indisponiveis neste cliente (anim ou prop ausente).')
+            :format(missing, #CatalogIndex))
+    end
+
+    -- Se o menu ja estiver aberto quando a varredura terminar, atualiza a lista.
+    SendNUIMessage({ action = 'catalogUpdated', catalog = CatalogIndex })
+end
+
 CreateThread(function()
     if not Config.AnimalEmotesEnabled then
         RP.AnimalEmotes = {}
@@ -146,7 +215,69 @@ CreateThread(function()
     CatalogReady = true
 
     DebugPrint(('Catalogo pronto: %d emotes'):format(#CatalogIndex))
+
+    -- Depois de liberar o catalogo, nao antes: a varredura leva alguns frames e
+    -- nao deve atrasar a primeira abertura do menu.
+    checkAvailability()
 end)
+
+-- ============================================================
+-- Apelidos
+-- ============================================================
+-- O player pode renomear qualquer emote so para ele. Fica em
+-- `settings.nicknames[<emote>]`, no mesmo JSON por citizenid que ja guarda
+-- favoritos, walk e mood — nenhuma coluna nova.
+
+---Nome exibido de um emote: apelido do player > label do catalogo > nome cru.
+---@param name string
+---@return string
+function GetEmoteDisplayName(name)
+    local nicknames = GetSetting('nicknames')
+    local nickname = (type(nicknames) == 'table') and nicknames[name] or nil
+    if type(nickname) == 'string' and nickname ~= '' then return nickname end
+
+    local emote = EmoteData and EmoteData[name]
+    return (emote and emote.label) or name
+end
+
+---Define (ou limpa, com nickname nil/vazio) o apelido de um emote.
+---@param name string
+---@param nickname string?
+---@return boolean
+function SetEmoteNickname(name, nickname)
+    if type(name) ~= 'string' or not EmoteData[name] then return false end
+
+    local nicknames = GetSetting('nicknames')
+    if type(nicknames) ~= 'table' then nicknames = {} end
+
+    if type(nickname) == 'string' then
+        nickname = nickname:gsub('^%s+', ''):gsub('%s+$', '')
+    end
+
+    if not nickname or nickname == '' then
+        nicknames[name] = nil
+    else
+        -- Teto de tamanho: o objeto inteiro vai para o banco a cada save, e a
+        -- lista tem 3.7k emotes.
+        nicknames[name] = nickname:sub(1, 48)
+    end
+
+    -- Guarda so o que foi renomeado; a tabela vazia vira nil para nao inchar o
+    -- JSON de quem nunca renomeou nada.
+    SaveSetting('nicknames', next(nicknames) and nicknames or nil)
+
+    -- O apelido nao entra no CatalogIndex: o indice e montado no boot, antes das
+    -- settings chegarem do servidor. A NUI recebe o mapa de apelidos separado e
+    -- resolve na hora de exibir; a roda se reregistra com o nome novo.
+    if RefreshWheel then RefreshWheel() end
+    return true
+end
+
+---@return table<string, string>
+function GetEmoteNicknames()
+    local nicknames = GetSetting('nicknames')
+    return type(nicknames) == 'table' and nicknames or {}
+end
 
 ---Espera o catalogo terminar de normalizar. Usado pelos comandos e pela NUI,
 ---que podem ser acionados antes da thread acima acabar.

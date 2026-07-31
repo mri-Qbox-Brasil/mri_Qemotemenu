@@ -13,6 +13,9 @@ Nasceu como substituto do `rpemotes-reborn`. O catálogo de animações e os ass
 - **Preview do personagem**: ao passar o mouse por um emote, um clone do seu personagem executa a animação, com props e tudo. O clone é local — nenhum outro jogador enxerga.
 - **Atalhos nas setas**: quatro slots, um por seta. Cada jogador escolhe o emote de cada slot e pode dar um nome próprio ao atalho.
 - **Padrões de servidor**: administradores definem o emote inicial de cada seta para quem nunca personalizou.
+- **Roda de emotes**: seis slots equipáveis, usados pela roda do ox_lib no F1.
+- **Apelidos**: qualquer emote pode ser renomeado, e o nome novo vale só para quem renomeou.
+- **Aviso de indisponível**: emote cuja animação ou objeto não existe no cliente aparece marcado.
 
 ## Como Funciona
 
@@ -61,6 +64,46 @@ LocalPlayer.state:set('emoteBindsBlocked', false) -- ao fechar
 ```
 
 Para descobrir por que uma seta não está respondendo, use `/emoteguard`: ele lista cada slot e o motivo do bloqueio.
+
+## Roda de emotes
+
+O jogador equipa emotes pelo menu e usa pela roda do ox_lib, que neste servidor
+abre no **F1**.
+
+**Para equipar:** abra o menu (F5), passe o mouse num emote e clique no `+`. Abre
+um seletor com os seis slots, mostrando o que já está em cada um. Clicar num slot
+ocupado substitui; clicar no slot que já tem aquele emote o remove.
+
+**Para usar:** F1 → *Emotes* → o emote. A roda executa direto.
+
+Dois limites que vêm do ox_lib e não de escolha nossa:
+
+- **São seis slots.** O `PAGE_ITEMS` da interface da roda é fixo em 6; do sétimo
+  item em diante o último lugar vira um botão "mais" e come um slot.
+- **Os emotes ficam um clique dentro da roda**, no item *Emotes*, em vez de
+  aparecerem direto ao abrir. Não existe forma de abrir um submenu do ox_lib
+  programaticamente, e pôr os seis na raiz brigaria com os itens do
+  `qbx_radialmenu`.
+
+Os slots são salvos por personagem, junto com favoritos e atalhos.
+
+## Renomear emotes
+
+O lápis em cada linha da lista dá um apelido pessoal ao emote — vale **só para
+quem renomeou**, e aparece na lista, na busca, nos atalhos de seta e na roda. O
+nome original continua visível entre parênteses. Deixar o campo vazio restaura.
+
+Serve principalmente para arrumar os nomes herdados que não descrevem o emote.
+
+## Emotes indisponíveis
+
+Um triângulo vermelho na linha significa que aquele emote não pode ser executado
+neste cliente: ou a animação não existe (arquivo ausente ou gamebuild antigo), ou
+o objeto que ele usa não existe. Passe o mouse na marca para ver qual dos dois.
+
+A verificação roda uma vez, alguns segundos depois do resource subir, e cobre
+também as animações nativas do GTA. Emotes de cenário não têm como ser
+verificados e nunca aparecem marcados.
 
 ## Configuração
 

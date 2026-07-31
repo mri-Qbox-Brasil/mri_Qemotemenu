@@ -27,12 +27,6 @@ function GetAllSlots()
     return ResolvedSlots
 end
 
-local function configSlot(slot)
-    for _, entry in ipairs(Config.FavoriteSlots) do
-        if entry.slot == slot then return entry end
-    end
-end
-
 local function resolveSlots()
     for _, entry in ipairs(Config.FavoriteSlots) do
         local slot = entry.slot
@@ -59,8 +53,8 @@ function GetSlotDisplayName(slot)
     if not resolved then return slot end
     if resolved.label and resolved.label ~= '' then return resolved.label end
 
-    local emote = EmoteData[resolved.emote]
-    return (emote and emote.label) or resolved.emote
+    -- Cai no apelido do player antes do label do catalogo.
+    return GetEmoteDisplayName(resolved.emote)
 end
 
 ---@param slot string

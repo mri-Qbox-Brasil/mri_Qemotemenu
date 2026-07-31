@@ -1,11 +1,12 @@
 import { MriKbd } from '@mriqbox/ui-kit'
 import { Pencil } from 'lucide-react'
-import type { EmoteEntry, SlotId, SlotMap } from '@/types'
+import type { EmoteEntry, NicknameMap, SlotId, SlotMap } from '@/types'
 import { SLOT_GLYPH, SLOT_LABEL, SLOT_ORDER } from '@/types'
 
 interface Props {
   slots: SlotMap
   catalog: EmoteEntry[]
+  nicknames: NicknameMap
   onEdit: (slot: SlotId) => void
 }
 
@@ -14,14 +15,17 @@ export function slotDisplayName(
   slot: SlotId,
   slots: SlotMap,
   catalog: EmoteEntry[],
+  nicknames: NicknameMap = {},
 ): string {
   const current = slots[slot]
   if (!current) return '—'
+  // Rótulo custom do atalho vence; depois o apelido pessoal do emote.
   if (current.label) return current.label
+  if (nicknames[current.emote]) return nicknames[current.emote]
   return catalog.find((e) => e.name === current.emote)?.label ?? current.emote
 }
 
-export function SlotBar({ slots, catalog, onEdit }: Props) {
+export function SlotBar({ slots, catalog, nicknames, onEdit }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
@@ -43,7 +47,7 @@ export function SlotBar({ slots, catalog, onEdit }: Props) {
 
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm text-foreground">
-                {slotDisplayName(slot, slots, catalog)}
+                {slotDisplayName(slot, slots, catalog, nicknames)}
               </span>
               <span className="block truncate text-[11px] text-muted-foreground">
                 {current

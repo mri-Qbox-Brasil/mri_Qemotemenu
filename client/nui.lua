@@ -10,13 +10,16 @@ local favorites = {}
 ---@return table
 local function buildPayload()
     return {
-        catalog   = CatalogIndex,
-        slots     = ResolvedSlots,
-        favorites = favorites,
-        walk      = GetWalkStyle(),
-        mood      = GetPlayerPedExpression(),
-        isAdmin   = IsEmoteAdmin,
-        arrows    = Config.ArrowControls,
+        catalog    = CatalogIndex,
+        slots      = ResolvedSlots,
+        favorites  = favorites,
+        nicknames  = GetEmoteNicknames(),
+        wheel      = GetWheel(),
+        wheelSlots = Config.WheelSlots,
+        walk       = GetWalkStyle(),
+        mood       = GetPlayerPedExpression(),
+        isAdmin    = IsEmoteAdmin,
+        arrows     = Config.ArrowControls,
     }
 end
 
@@ -163,6 +166,36 @@ RegisterNUICallback('toggleFavorite', function(data, cb)
 
     SaveSetting('favorites', favorites)
     cb({ ok = true, favorites = favorites })
+end)
+
+RegisterNUICallback('setNickname', function(data, cb)
+    if type(data) ~= 'table' or type(data.name) ~= 'string' then
+        cb({ ok = false, error = 'payload invalido' })
+        return
+    end
+
+    local ok = SetEmoteNickname(data.name, data.nickname)
+    cb({ ok = ok, nicknames = GetEmoteNicknames() })
+end)
+
+RegisterNUICallback('setWheelSlot', function(data, cb)
+    if type(data) ~= 'table' or type(data.slot) ~= 'number' then
+        cb({ ok = false, error = 'slot invalido' })
+        return
+    end
+
+    local ok = SetWheelSlot(data.slot, data.emote)
+    cb({ ok = ok, wheel = GetWheel() })
+end)
+
+RegisterNUICallback('clearWheelSlot', function(data, cb)
+    if type(data) ~= 'table' or type(data.slot) ~= 'number' then
+        cb({ ok = false, error = 'slot invalido' })
+        return
+    end
+
+    local ok = ClearWheelSlot(data.slot)
+    cb({ ok = ok, wheel = GetWheel() })
 end)
 
 RegisterNUICallback('adminSetDefault', function(data, cb)

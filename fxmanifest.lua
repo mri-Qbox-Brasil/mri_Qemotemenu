@@ -53,6 +53,7 @@ client_scripts {
     "client/walk.lua",
     "client/expressions.lua",
     "client/favorites.lua",
+    "client/wheel.lua",
     "client/preview.lua",
     "client/nui.lua",
     "client/commands.lua",

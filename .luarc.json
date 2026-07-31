@@ -17,7 +17,6 @@
     "LoadAddonEmotes",
     "BigDogs",
     "SmallDogs",
-
     "DebugPrint",
     "Notify",
     "NotifyLong",
@@ -38,20 +37,17 @@
     "HideHUDThisFrame",
     "SetupButtons",
     "HandleZoomAndCheckRotation",
-
     "EmoteData",
     "CatalogIndex",
     "CatalogReady",
     "AwaitCatalog",
     "GetCatalogAsScully",
-
     "PlayerProps",
     "PreviewPedProps",
     "AttachedProp",
     "AddProps",
     "DestroyAllProps",
     "CleanScenarioObjects",
-
     "IsInAnimation",
     "CurrentAnimationName",
     "CurrentTextureVariation",
@@ -62,15 +58,12 @@
     "EmoteMenuStart",
     "EmoteCommandStart",
     "GetCurrentEmote",
-
     "PtfxThis",
     "PtfxStart",
     "PtfxStop",
-
     "CancelSharedEmote",
     "RequestSharedEmote",
     "ListSharedEmotes",
-
     "SetWalkStyle",
     "ResetWalkStyle",
     "GetWalkStyle",
@@ -79,14 +72,12 @@
     "ResetPlayerPedExpression",
     "GetPlayerPedExpression",
     "RestoreExpression",
-
     "ResolvedSlots",
     "GetSlot",
     "GetAllSlots",
     "GetSlotDisplayName",
     "SetFavoriteSlot",
     "ApplyServerSlots",
-
     "PreviewPed",
     "PreviewActive",
     "OpenPreview",
@@ -96,7 +87,6 @@
     "GetPreviewingEmote",
     "GetPreviewDiagnostics",
     "RefreshPreviewCam",
-
     "MenuIsOpen",
     "CanFireEmoteBind",
     "DumpInputGuard",
@@ -105,21 +95,26 @@
     "ToggleEmoteMenu",
     "GetFavorites",
     "SetFavoritesLocal",
-
     "GetSetting",
     "SaveSetting",
     "FlushSettings",
     "IsEmoteAdmin",
-
     "Pointing",
     "IsProne",
     "IsUsingNewscam",
     "IsUsingBinoculars",
-
     "HasEmotePerms",
     "GetDefaults",
     "SetDefault",
     "ReloadDefaultsCache",
-    "DefaultsReady"
+    "DefaultsReady",
+    "GetEmoteDisplayName",
+    "SetEmoteNickname",
+    "GetEmoteNicknames",
+    "GetWheel",
+    "SetWheelSlot",
+    "ClearWheelSlot",
+    "RefreshWheel",
+    "IsWheelRegistered"
   ]
 }

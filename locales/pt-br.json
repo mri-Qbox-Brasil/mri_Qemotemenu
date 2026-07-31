@@ -48,6 +48,14 @@
   "register_crawl": "Rastejar",
   "register_ragdoll": "Ragdoll",
 
+  "wheel_root": "Emotes",
+  "wheel_empty": "Vazio",
+  "wheel_empty_hint": "Slot vazio. Equipe um emote pelo menu (F5) no botão +.",
+  "wheel_equipped": "Equipado no slot %s.",
+  "wheel_cleared": "Slot %s esvaziado.",
+  "nickname_set": "Renomeado para \"%s\".",
+  "nickname_cleared": "Nome original restaurado.",
+
   "camera": "Pressione G para usar o flash da câmera.",
   "candle": "Pressione G para acender a vela.",
   "cut": "Pressione G para cortar.",
