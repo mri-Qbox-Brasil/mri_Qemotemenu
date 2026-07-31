@@ -262,3 +262,39 @@ end)
 RegisterNetEvent('scully_emotemenu:playRegisteredEmote', function(name)
     exports[GetCurrentResourceName()]:playRegisteredEmote(name)
 end)
+
+-- ============================================================
+-- Conflito com o resource original
+-- ============================================================
+-- O `provide` do fxmanifest assume o lugar destes resources, e parte a partir
+-- do principio de que eles nao estao no ar. Se o original estiver rodando junto,
+-- os dois registram os mesmos comandos (/e, /emotemenu, /w) e a mesma tecla, e
+-- o resultado e erratico de um jeito que nao parece conflito: a tecla abre os
+-- dois menus, um rouba o foco da NUI do outro, e o que sobra na tela nao e nem
+-- um nem outro.
+--
+-- Barato demais para deixar o proximo descobrir isso na tentativa e erro.
+
+local REPLACES = { 'rpemotes', 'rpemotes-reborn', 'dpemotes', 'scully_emotemenu' }
+
+CreateThread(function()
+    Wait(5000) -- depois de todo mundo subir
+
+    for _, resource in ipairs(REPLACES) do
+        if GetResourceState(resource) == 'started' then
+            lib.print.warn(([[
+
+  ==========================================================================
+   CONFLITO: '%s' esta rodando junto com o mri_Qemotemenu.
+
+   Os dois registram /e, /emotemenu, /w e a mesma tecla de abrir o menu. Com
+   os dois no ar o comportamento e imprevisivel — inclusive o menu abrir sem
+   desenhar a interface.
+
+   Este resource substitui o '%s' (provide no fxmanifest): pare o original
+   no server.cfg e mantenha so um.
+  ==========================================================================
+]]):format(resource, resource))
+        end
+    end
+end)

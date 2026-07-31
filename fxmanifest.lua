@@ -83,11 +83,27 @@ server_scripts {
 
 ui_page "web/build/index.html"
 
+-- Assets listados por extensao, e nao com o glob `web/build/**/*`.
+--
+-- O `**/*` e o unico padrao aqui que exige o loader descer a arvore por conta
+-- propria, e o sintoma classico de ele nao descer e exatamente este: o
+-- index.html abre (esta listado explicitamente), o JS e o CSS dao 404, e sobra
+-- uma pagina em branco por cima do jogo — parece que a UI "nao abriu", quando
+-- na verdade ela carregou vazia.
+--
+-- O gh-pausemenuv2 lista assim, por extensao, e a NUI dele funciona nos dois
+-- ambientes. Nao custa nada seguir o mesmo padrao.
 files {
     "conditionalanims.meta",
     "locales/*.json",
     "web/build/index.html",
-    "web/build/**/*"
+    "web/build/assets/*.js",
+    "web/build/assets/*.css",
+    "web/build/assets/*.woff",
+    "web/build/assets/*.woff2",
+    "web/build/assets/*.ttf",
+    "web/build/assets/*.png",
+    "web/build/assets/*.svg"
 }
 
 data_file "CONDITIONAL_ANIMS_FILE" "conditionalanims.meta"
