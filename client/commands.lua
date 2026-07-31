@@ -314,6 +314,14 @@ RegisterCommand('emotepreview', function(_source, args)
         end
         Config.StudioCamLateral = n
         Notify(('Offset lateral: %.2f'):format(n))
+    elseif what == 'vertical' then
+        local n = tonumber(args[2])
+        if not n then
+            Notify('Uso: /emotepreview vertical <n>', 'error')
+            return
+        end
+        Config.StudioCamVertical = n
+        Notify(('Offset vertical: %.2f'):format(n))
     elseif what == 'rot' then
         local n = tonumber(args[2])
         if not n then
@@ -364,6 +372,7 @@ RegisterCommand('emotepreview', function(_source, args)
             ("Config.StudioCamOffset = vec3(%.2f, %.2f, %.2f)"):format(o.x, o.y, o.z),
             ("Config.StudioCamFov = %.1f"):format(Config.StudioCamFov),
             ("Config.StudioCamLateral = %.2f"):format(Config.StudioCamLateral),
+            ("Config.StudioCamVertical = %.2f"):format(Config.StudioCamVertical),
             ("Config.StudioDof = %s"):format(tostring(Config.StudioDof)),
             ("Config.StudioTimecycle = '%s'"):format(Config.StudioTimecycle),
             ("Config.StudioForceDaytime = %s"):format(tostring(Config.StudioForceDaytime)),

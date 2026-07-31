@@ -36,13 +36,25 @@ Config.PreviewMode = 'studio'
 Config.StudioCoords = vec3(1104.49, 195.9, -49.44)
 Config.StudioHeading = 44.22
 
--- Camera portada do retrato do qbx_core (client/character.lua:139-152).
--- StudioCamOffset e relativo ao ped: x = lado, y = frente, z = altura.
-Config.StudioCamOffset = vec3(0.0, 1.6, 0.65)
-Config.StudioCamFov = 38.0
--- Empurra o ped para um lado do quadro. O -0.4 e o valor do qbx_core, calibrado
--- para o layout DELES; no nosso a coluna do ped e a do meio, entao 0 centraliza.
+-- Camera baseada no retrato do qbx_core (client/character.lua:139-152), mas
+-- recuada: la o enquadramento e busto, e aqui precisamos do corpo inteiro para
+-- ver a animacao.
+--
+-- StudioCamOffset e relativo ao ped: x = lado, y = distancia, z = altura.
+-- A 3.2 m com FOV 42 o quadro tem ~2.5 m de altura util, o que cabe um ped de
+-- ~1.9 m com folga. A altura 0.95 deixa a camera na linha do peito, e nao
+-- olhando de baixo para cima.
+Config.StudioCamOffset = vec3(0.0, 3.2, 0.95)
+Config.StudioCamFov = 42.0
+
+-- Ambos sao offsets do ponto de mira, aplicados sobre o osso da cabeca.
+--   Lateral  empurra o ped para um lado do quadro (negativo = direita da tela).
+--            O -0.4 do qbx_core servia o layout DELES; aqui a coluna do ped e a
+--            do meio, entao 0 centraliza.
+--   Vertical desce a mira da cabeca para o meio do corpo. Sem isto a camera
+--            mira no rosto e corta os pes.
 Config.StudioCamLateral = 0.0
+Config.StudioCamVertical = -0.70
 -- 0 = corte seco. Qualquer valor > 0 faz a camera INTERPOLAR da posicao do
 -- jogador ate o estudio — ou seja, atravessar o mapa voando. Deixe em 0.
 Config.StudioCamBlend = 0

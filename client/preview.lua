@@ -105,9 +105,11 @@ local function setupStudioCam()
     SetCamFov(previewCam, Config.StudioCamFov)
     SetCamRot(previewCam, 0.0, 0.0, GetEntityHeading(PreviewPed) + 180.0, 2)
 
-    -- O offset lateral e o que empurra o ped para um lado do quadro, liberando o
-    -- resto da tela para a NUI. Sem ele o ped fica centralizado atras da lista.
-    PointCamAtPedBone(previewCam, PreviewPed, HEAD_BONE, Config.StudioCamLateral, 0.0, 0.03, true)
+    -- Mira no osso da cabeca com dois offsets: o lateral posiciona o ped no
+    -- quadro, e o vertical desce a mira ate o meio do corpo — sem ele a camera
+    -- aponta para o rosto e corta os pes.
+    PointCamAtPedBone(previewCam, PreviewPed, HEAD_BONE,
+        Config.StudioCamLateral, 0.0, Config.StudioCamVertical, true)
 
     if Config.StudioDof then
         SetCamUseShallowDofMode(previewCam, true)
