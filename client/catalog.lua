@@ -99,9 +99,17 @@ local function buildIndex()
         }
     end
 
+    local function padDigits(str)
+        return (str:gsub("%d+", function(digits)
+            return string.format("%09d", tonumber(digits))
+        end))
+    end
+
     table.sort(index, function(a, b)
         if a.category ~= b.category then return a.category < b.category end
-        return a.label:lower() < b.label:lower()
+        local aLabel = padDigits((a.label or a.name or ""):lower())
+        local bLabel = padDigits((b.label or b.name or ""):lower())
+        return aLabel < bLabel
     end)
 
     CatalogIndex = index
@@ -334,6 +342,16 @@ function GetCatalogAsScully(category)
         end
     end
 
-    table.sort(out, function(a, b) return a.Label:lower() < b.Label:lower() end)
+    local function padDigits(str)
+        return (str:gsub("%d+", function(digits)
+            return string.format("%09d", tonumber(digits))
+        end))
+    end
+
+    table.sort(out, function(a, b)
+        local aLabel = padDigits((a.Label or a.Command or ""):lower())
+        local bLabel = padDigits((b.Label or b.Command or ""):lower())
+        return aLabel < bLabel
+    end)
     return out
 end

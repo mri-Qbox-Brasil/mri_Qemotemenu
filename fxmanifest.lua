@@ -42,6 +42,13 @@ shared_scripts {
 -- `client/catalog.lua` consome os dois e libera `RP`. Nao trocar por glob.
 client_scripts {
     "data/animations.lua",
+    "data/custom_expressions.lua",
+    "data/custom_walks.lua",
+    "data/custom_shared.lua",
+    "data/custom_dances.lua",
+    "data/custom_animals.lua",
+    "data/custom_emotes.lua",
+    "data/custom_props.lua",
     "data/animations_custom.lua",
     "client/utils.lua",
     "client/catalog.lua",
@@ -136,3 +143,17 @@ data_file "DLC_ITYP_REQUEST" "stream/jarp_scooter_prop.ytyp"
 data_file "DLC_ITYP_REQUEST" "stream/prop_mawar_bayu.ytyp"
 data_file "DLC_ITYP_REQUEST" "stream/scrlt_ipif14max.ytyp"
 data_file "DLC_ITYP_REQUEST" "stream/skol.ytyp"
+
+-- Props customizados adicionados automaticamente da pasta stream
+data_file "DLC_ITYP_REQUEST" "stream/badges.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_animal_fish002.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_effect_cigarpack.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_food_dessert_a.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_food_icecream_pack.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_food_xmas22.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_foodpack.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_package_pizzahut.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_prop_give_gift.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/bzzz_prop_torch_fire001.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/lilflags_ytyp.ytyp"
+data_file "DLC_ITYP_REQUEST" "stream/prideprops_ytyp.ytyp"

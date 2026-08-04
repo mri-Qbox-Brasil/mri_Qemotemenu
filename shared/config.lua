@@ -1,5 +1,4 @@
 ---@diagnostic disable: lowercase-global
-
 Config = {}
 
 Config.Debug = false
@@ -33,8 +32,8 @@ Config.PreviewMode = 'studio'
 -- validado neste servidor. O `mri_Qautoshot` documenta uma alternativa mais
 -- radical — vec3(0.0, 0.0, -150.0), onde nao existe geometria nenhuma para
 -- vazar atras do ped — mas o client dele ainda nao esta implementado.
-Config.StudioCoords = vec3(1104.49, 195.9, -49.44)
-Config.StudioHeading = 44.22
+Config.StudioCoords = vec3(-1270.99, -3379.19, 14.13)
+Config.StudioHeading = 330.69
 
 -- Camera baseada no retrato do qbx_core (client/character.lua:139-152), mas
 -- recuada: la o enquadramento e busto, e aqui precisamos do corpo inteiro para
@@ -58,7 +57,7 @@ Config.StudioCamVertical = -0.70
 -- 0 = corte seco. Qualquer valor > 0 faz a camera INTERPOLAR da posicao do
 -- jogador ate o estudio — ou seja, atravessar o mapa voando. Deixe em 0.
 Config.StudioCamBlend = 0
-Config.StudioDof = true       -- profundidade de campo rasa (exige SetUseHiDof no tick)
+Config.StudioDof = true -- profundidade de campo rasa (exige SetUseHiDof no tick)
 Config.StudioLoadScene = true -- forca o streaming do estudio antes de mostrar
 
 -- Iluminacao previsivel. O timecycle nao mexe no relogio; o ForceDaytime sim,
@@ -76,7 +75,7 @@ Config.PreviewBlur = true -- SetTimecycleModifier('hud_def_blur') com o menu abe
 -- Onde plantar o ped. X/Y sao coordenadas de tela (0..1).
 Config.PreviewScreenX = 0.50
 Config.PreviewScreenY = 0.82
-Config.PreviewDepth = 3.2           -- metros a frente da camera
+Config.PreviewDepth = 3.2 -- metros a frente da camera
 Config.PreviewHeadingOffset = 180.0 -- 180 = de frente para a camera
 
 -- ============================================================
@@ -107,10 +106,31 @@ Config.WheelItemIcon = 'person-running' -- icone de cada emote equipado
 -- herdada, mantida de proposito para nao mudar o comportamento dos players.
 
 Config.FavoriteSlots = {
-    { slot = 'UP',    key = 'UP',    keybindName = 'ultra_salute',    label = 'Emote favorito (cima)',    emote = 'salute' },
-    { slot = 'DOWN',  key = 'DOWN',  keybindName = 'ultra_assobio',   label = 'Emote favorito (baixo)',   emote = 'assobiar' },
-    { slot = 'LEFT',  key = 'LEFT',  keybindName = 'ultra_joia',      label = 'Emote favorito (esquerda)', emote = 'joia' },
-    { slot = 'RIGHT', key = 'RIGHT', keybindName = 'ultra_facepalm',  label = 'Emote favorito (direita)', emote = 'wtf4' },
+    {
+        slot = 'UP',
+        key = 'UP',
+        keybindName = 'ultra_salute',
+        label = 'Emote favorito (cima)',
+        emote = 'salute'
+    }, {
+        slot = 'DOWN',
+        key = 'DOWN',
+        keybindName = 'ultra_assobio',
+        label = 'Emote favorito (baixo)',
+        emote = 'assobiar'
+    }, {
+        slot = 'LEFT',
+        key = 'LEFT',
+        keybindName = 'ultra_joia',
+        label = 'Emote favorito (esquerda)',
+        emote = 'joia'
+    }, {
+        slot = 'RIGHT',
+        key = 'RIGHT',
+        keybindName = 'ultra_facepalm',
+        label = 'Emote favorito (direita)',
+        emote = 'wtf4'
+    }
 }
 
 -- ============================================================
@@ -124,22 +144,22 @@ Config.FavoriteSlots = {
 -- e atrapalharia o loop de quem o abriu. Na pratica esses teclados desabilitam
 -- os controles, entao o `controlClaim` ja cobre o caso.
 Config.InputGuard = {
-    nuiFocus     = true,  -- qualquer NUI com foco (nosso menu, ox_lib, chat, MDT, phone...)
-    pauseMenu    = true,  -- pause menu / warning message
-    controlClaim = true,  -- menu nativo desabilitou o controle da seta neste frame
-    stateBags    = true,  -- LocalPlayer.state.canEmote / emoteBindsBlocked
-    playerState  = true,  -- morto, ragdoll, algemado, mirando
-    inVehicle    = false, -- true = nao dispara dentro de veiculo
-    inWater      = true,  -- true = nao dispara nadando
+    nuiFocus = true, -- qualquer NUI com foco (nosso menu, ox_lib, chat, MDT, phone...)
+    pauseMenu = true, -- pause menu / warning message
+    controlClaim = true, -- menu nativo desabilitou o controle da seta neste frame
+    stateBags = true, -- LocalPlayer.state.canEmote / emoteBindsBlocked
+    playerState = true, -- morto, ragdoll, algemado, mirando
+    inVehicle = false, -- true = nao dispara dentro de veiculo
+    inWater = true -- true = nao dispara nadando
 }
 
 -- Controles que cada seta fisica aciona. Se QUALQUER um estiver desabilitado
 -- neste frame, e porque outro resource reivindicou a tecla.
 Config.ArrowControls = {
-    UP    = { 172, 188, 27 },  -- CELLPHONE_UP    / FRONTEND_UP    / PHONE_UP
-    DOWN  = { 173, 187 },      -- CELLPHONE_DOWN  / FRONTEND_DOWN
-    LEFT  = { 174, 189 },      -- CELLPHONE_LEFT  / FRONTEND_LEFT
-    RIGHT = { 175, 190 },      -- CELLPHONE_RIGHT / FRONTEND_RIGHT
+    UP = {172, 188, 27}, -- CELLPHONE_UP    / FRONTEND_UP    / PHONE_UP
+    DOWN = {173, 187}, -- CELLPHONE_DOWN  / FRONTEND_DOWN
+    LEFT = {174, 189}, -- CELLPHONE_LEFT  / FRONTEND_LEFT
+    RIGHT = {175, 190} -- CELLPHONE_RIGHT / FRONTEND_RIGHT
 }
 
 -- ============================================================
@@ -209,10 +229,9 @@ Config.CinematicsBridgeEnabled = true
 Config.DisabledHandsupControls = {
     24, 25, 47, 58, 140, 141, 142, 143, 263, 264, 257,
     ---@diagnostic disable-next-line: assign-type-mismatch
-    45, 22, 44, 38, 23, 288, 289, 170, 167, 73,
-    59, 71, 72, 75, 76, 82, 83, 84, 85, 86,
-    99, 100, 115, 116, 117, 118, 122, 135, 156, 157,
-    158, 159, 160, 161, 162, 163, 164, 165,
+    45, 22, 44, 38, 23, 288, 289, 170, 167, 73, 59, 71, 72, 75, 76, 82, 83, 84,
+    85, 86, 99, 100, 115, 116, 117, 118, 122, 135, 156, 157, 158, 159, 160, 161,
+    162, 163, 164, 165
 }
 
 -- ============================================================
@@ -220,12 +239,12 @@ Config.DisabledHandsupControls = {
 -- ============================================================
 
 Config.Plugin = {
-    id          = 'emotes',
-    label       = 'Emotes',
-    icon        = 'smile',
+    id = 'emotes',
+    label = 'Emotes',
+    icon = 'smile',
     description = 'Define os emotes padrao dos atalhos de seta para todo o servidor.',
-    htmlPath    = 'web/build/index.html',
-    perms       = { 'emotes.manage' },
+    htmlPath = 'web/build/index.html',
+    perms = {'emotes.manage'}
 }
 
 -- ACE exigida para editar os defaults do servidor quando o mri_Qadmin nao
@@ -273,17 +292,15 @@ Config.HudIntegrations = {
         -- Os dois nomes tem caixa diferente mesmo (hideHUD / showHud), e e
         -- assim no resource: ghds_advancedhud/client/main.lua:356 e :364.
         hide = function() TriggerEvent('ghds_advancedhud:client:hideHUD') end,
-        show = function() TriggerEvent('ghds_advancedhud:client:showHud') end,
-    },
-    {
+        show = function() TriggerEvent('ghds_advancedhud:client:showHud') end
+    }, {
         resource = 'jg-hud',
         -- https://docs.jgscripts.com/hud/exports
         hide = function() exports['jg-hud']:toggleHud(false) end,
-        show = function() exports['jg-hud']:toggleHud(true) end,
-    },
-    {
+        show = function() exports['jg-hud']:toggleHud(true) end
+    }, {
         resource = 'mri_Qhud',
         hide = function() TriggerEvent('hud:client:setVisible', false) end,
-        show = function() TriggerEvent('hud:client:setVisible', true) end,
-    },
+        show = function() TriggerEvent('hud:client:setVisible', true) end
+    }
 }

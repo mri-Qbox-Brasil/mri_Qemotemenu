@@ -280,8 +280,18 @@ local REPLACES = { 'rpemotes', 'rpemotes-reborn', 'dpemotes', 'scully_emotemenu'
 CreateThread(function()
     Wait(5000) -- depois de todo mundo subir
 
+    local myName = GetCurrentResourceName()
+    local provided = {}
+    local numProvides = GetNumResourceMetadata(myName, 'provide') or 0
+    if numProvides > 0 then
+        for i = 0, numProvides - 1 do
+            local p = GetResourceMetadata(myName, 'provide', i)
+            if p then provided[p] = true end
+        end
+    end
+
     for _, resource in ipairs(REPLACES) do
-        if GetResourceState(resource) == 'started' then
+        if GetResourceState(resource) == 'started' and not provided[resource] then
             lib.print.warn(([[
 
   ==========================================================================
